@@ -1,0 +1,79 @@
+<%- include("partials/header.ejs") %>
+  
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <% if (locals.homeSection) { %>
+        <%- homeSection %>
+    <% } else if (locals.viewSection) { %>
+        <%- viewSection %>
+    <% } else { %>
+        <%- reviewSection %>
+    <% } %>
+
+<%- include("partials/footer.ejs") %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/review.js"></script>
+<script src="js/view.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    let selectedNeighborhood = '';
+    let selectedCuisine = '';
+
+    function setupSearch(searchInputId, listId) {
+      const searchInput = document.getElementById(searchInputId);
+      const list = document.getElementById(listId);
+      if (!searchInput || !list) {
+          return;
+      }
+      
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.trim().toLowerCase();
+        const items = list.querySelectorAll('.dropdown-item');
+        items.forEach(a => {
+          const text = (a.textContent || '').toLowerCase();
+          const li = a.closest('li') || a;
+          li.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+      });
+    }
+
+    setupSearch('searchNeighborhood', 'neighborhoodList');
+    setupSearch('searchCuisine', 'cuisineList');
+
+    document.querySelectorAll('#neighborhoodList .dropdown-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        selectedNeighborhood = this.dataset.value || this.textContent.trim();
+        const btn = document.getElementById('neighborhoodSelect');
+        if (btn) { 
+          btn.textContent = selectedNeighborhood;
+        }
+      });
+    });
+
+    document.querySelectorAll('#cuisineList .dropdown-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        selectedCuisine = this.dataset.value || this.textContent.trim();
+        const btn = document.getElementById('cuisineSelect');
+        if (btn) {
+          btn.textContent = selectedCuisine;
+        }
+      });
+    });
+
+    const searchBtn = document.querySelector('.search-btn');
+    function handleSearch() {
+      const qn = encodeURIComponent(selectedNeighborhood || 'Any');
+      const qc = encodeURIComponent(selectedCuisine || 'Any');
+      window.location.href = `/view?neighborhood=${qn}&cuisine=${qc}`;
+    }
+    if (searchBtn) searchBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleSearch();
+    });
+  });
+</script>
