@@ -128,3 +128,11 @@ footer {
         margin: 1rem;
     }
 }
+
+@media (min-width: 992px) {
+    #navbarNav {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
