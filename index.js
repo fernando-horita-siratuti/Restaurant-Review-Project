@@ -161,7 +161,20 @@ app.get("/view", async (req, res) => {
             restaurantNamesList = `<ul class="list-group">`;
             allEstablishments.forEach(restaurantName => {
                 if (restaurantName != undefined ) {
-                    restaurantNamesList += `<li class="list-group-item">${restaurantName}</li>`;
+                    const encodedNeighborhood = encodeURIComponent(neighborhood);
+                    const encodedCuisine = encodeURIComponent(cuisine);
+                    const encodedREstaurantName = encodeURIComponent(restaurantName);
+
+                    restaurantNamesList += `
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span class="fw-bold text-start ms-3">${restaurantName}</span>
+                                                    <a href="/view?neighborhood=${encodedNeighborhood}&cuisine=${encodedCuisine}&restaurantName=${encodedREstaurantName}" 
+                                                    class="text-primary text-decoration-none me-3" 
+                                                    style="font-size: 0.9rem; white-space: nowrap; margin-left: 15px;">
+                                                    See the reviews <i class="bi bi-arrow-right"></i>
+                                                    </a>
+                                                </li>
+                                            `;
                 }
             });
             restaurantNamesList += `</ul>`;
