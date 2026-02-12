@@ -362,7 +362,7 @@ async function getEstablishment(neighborhoodId, category) {
 
         let establishmentNames = body.features.map((item) => item.properties.name);
 
-        establishmentNames = establishmentNames.sort();
+        establishmentNames.sort();
         
         return establishmentNames;
     } catch (err) {
