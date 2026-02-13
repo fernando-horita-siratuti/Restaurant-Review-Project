@@ -29,63 +29,71 @@ function getArraysFromStorage() {
 }
 
 function updateUI() {
-  const { usernames, restaurantTexts, neighborhoods, cuisines, ratings, reviewTexts } = getArraysFromStorage();
-
   const container = document.getElementById("postsContainer");
+  if (!container) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const targetRestaurant = params.get('restaurantName'); 
+
+  if (!targetRestaurant) {
+      container.innerHTML = "";
+      return; 
+  }
+
+  const { usernames, restaurantTexts, neighborhoods, cuisines, ratings, reviewTexts } = getArraysFromStorage();
   container.innerHTML = "";
 
   const count = Math.max(usernames.length, restaurantTexts.length);
-  if (count === 0) {
-    container.innerHTML = '<div class="text-center mt-3 fs-3 fw-bold">No reviews yet :/</div>';
-    return;
-  }
+  let reviewsFound = false;
 
   for (let i = count - 1; i >= 0; i--) {
-    const user = usernames[i] || "Anonimous";
+    const user = usernames[i] || "Anonymous";
     const rest = restaurantTexts[i] || "Restaurant";
     const neigh = neighborhoods[i] || "Unknown"; 
     const cuis = cuisines[i] || "Unknown"; 
     const rate = ratings[i] || "Rating: N/A";
     const review = reviewTexts[i] || "N/A";
 
+    const restClean = rest.trim().toLowerCase();
+    const targetClean = targetRestaurant.trim().toLowerCase();
+
+    if (restClean !== targetClean) {
+        continue;
+    }
+
+    reviewsFound = true;
+
     const card = document.createElement("div");
     card.className = "card mb-3 shadow-sm"; 
-
+    
     const bodyDiv = document.createElement("div");
     bodyDiv.className = "card-body";
-
-    const usernameEl = document.createElement("h3");
-    usernameEl.className = "card-title fw-bold";
-    usernameEl.style.color = "#382f2f";
-    usernameEl.textContent = user;
-
-    const restEl = document.createElement("h5");
-    restEl.className = "card-subtitle mb-1 fw-bold"; 
-    restEl.style.color = "#382f2f";
-    restEl.textContent = rest;
-
-    const locationCuisineEl = document.createElement("p");
-    locationCuisineEl.className = "text-muted mb-2 fs-6";
-    locationCuisineEl.style.fontSize = "0.9rem";
-    locationCuisineEl.innerHTML = `📍 ${neigh} &nbsp; | &nbsp; 🍽️ ${cuis}`;
-
-    const ratingEl = document.createElement("h5");
-    ratingEl.className = "card-subtitle mb-2 fw-bold";
-    ratingEl.style.color = "#382f2f";
-    ratingEl.textContent = rate;
-
-    const reviewEl = document.createElement("p");
-    reviewEl.className = "card-text mt-3";
-    reviewEl.textContent = review;
-
-    bodyDiv.appendChild(usernameEl);
-    bodyDiv.appendChild(restEl);
-    bodyDiv.appendChild(locationCuisineEl); 
-    bodyDiv.appendChild(ratingEl);
-    bodyDiv.appendChild(reviewEl);
-
+    
+    const htmlContent = `
+                            <h3 class="card-title fw-bold" style="color: #382f2f;">${user}</h3>
+                            <h5 class="card-subtitle mb-1 fw-bold" style="color: #382f2f;">${rest}</h5>
+                            <p class="text-muted mb-2 fs-6" style="font-size: 0.9rem;">📍 ${neigh} &nbsp; | &nbsp; 🍽️ ${cuis}</p>
+                            <h5 class="card-subtitle mb-2 fw-bold" style="color: #382f2f;">${rate}</h5>
+                            <p class="card-text mt-3">${review}</p>
+                        `;
+    
+    bodyDiv.innerHTML = htmlContent;
     card.appendChild(bodyDiv);
     container.appendChild(card);
+  }
+
+  const titleElement = document.getElementById("reviewsTitle");
+  
+  if (reviewsFound) {
+    if (titleElement) titleElement.style.display = "block";
+  } else {
+      if (titleElement) titleElement.style.display = "none";
+      
+      container.innerHTML = `
+                              <div class="text-center mt-3 fs-3 fw-bold text-muted">
+                                No community reviews yet for "${targetRestaurant}" :/
+                              </div>
+                            `;
   }
 }
 

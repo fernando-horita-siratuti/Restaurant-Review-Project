@@ -122,118 +122,124 @@ app.get("/", (req, res) => {
 app.get("/view", async (req, res) => {
   const neighborhood = req.query.neighborhood;
   const cuisine = req.query.cuisine;
-  let restaurantNamesList = "";
-  let apiSectionHtml = "";
+  const selectedRestaurant = req.query.restaurantName; 
+  let viewContentHtml = `
+                            <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+                                <h1 class="text-center fw-bold" 
+                                    style="color: #382f2f; font-family: 'Poppins', sans-serif;">
+                                    Please, select a neighborhood and a cuisine on the home page.
+                                </h1>
+                            </div>
+                        `;
 
   try {
-    if (neighborhood && cuisine) {
-        const categoriesMap = {
-            'Any': 'catering.restaurant',
-            'African': 'catering.restaurant.african',
-            'Arabic': 'catering.restaurant.arab',
-            'Argentinian': 'catering.restaurant.argentinian',
-            'Bar': 'catering.bar',
-            'Bakery': 'commercial.food_and_drink.bakery', 
-            'Brazilian': 'catering.restaurant.brazilian',
-            'Brazilian Barbecue': 'catering.restaurant.barbecue', 
-            'Burgers': 'catering.restaurant.burger',
-            'Chinese': 'catering.restaurant.chinese',
-            'Coffee Shop': 'catering.cafe.coffee_shop',
-            'French': 'catering.restaurant.french',
-            'German': 'catering.restaurant.german',
-            'Ice Cream Shop': 'catering.ice_cream',
-            'Italian': 'catering.restaurant.italian',
-            'Japanese': 'catering.restaurant.japanese',
-            'Korean': 'catering.restaurant.korean',
-            'Mexican': 'catering.restaurant.mexican',
-            'Peruvian': 'catering.restaurant.peruvian',
-            'Pizza': 'catering.restaurant.pizza',
-            'Portuguese': 'catering.restaurant.portuguese',
-            'Seafood': 'catering.restaurant.seafood',
-            'Spanish': 'catering.restaurant.spanish',
-            'Vegetarian': 'catering.restaurant.vegetarian',
-        };
-        const apiCategory = categoriesMap[cuisine] || 'catering.restaurant';
-        const neighborhoodId = await getNeighborhoodId(neighborhood);
-        const allEstablishments = await getEstablishment(neighborhoodId, apiCategory);
+    if (selectedRestaurant) {
+        const backLink = `/view?neighborhood=${encodeURIComponent(neighborhood)}&cuisine=${encodeURIComponent(cuisine)}`;
         
-        if (allEstablishments.length > 0) {
-            restaurantNamesList = `<ul class="list-group">`;
-            allEstablishments.forEach(restaurantName => {
-                if (restaurantName != undefined ) {
+        viewContentHtml = `
+                                <div class="container mt-4">
+                                    <h1 id="reviewsTitle" class="fw-bold mb-3 text-center" style="color: #382f2f; display: none;">
+                                        Community Reviews for "${selectedRestaurant}" 👨‍🍳
+                                    </h1>
+                                    <div id="postsContainer" class="mt-4"></div>
+                                    <div class="text-center mt-5 mb-4">
+                                        <a href="${backLink}" class="btn px-4 py-2 fw-bold shadow-sm" 
+                                        style="background-color: #382f2f; color: white; border-radius: 8px;">
+                                            <i class="bi bi-arrow-left me-2"></i> Back to restaurant list
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+    }
+    else if (neighborhood && cuisine) {
+      const categoriesMap = {
+        'Any': 'catering.restaurant',
+        'African': 'catering.restaurant.african',
+        'Arabic': 'catering.restaurant.arab',
+        'Argentinian': 'catering.restaurant.argentinian',
+        'Bar': 'catering.bar',
+        'Bakery': 'commercial.food_and_drink.bakery', 
+        'Brazilian': 'catering.restaurant.brazilian',
+        'Brazilian Barbecue': 'catering.restaurant.barbecue', 
+        'Burgers': 'catering.restaurant.burger',
+        'Chinese': 'catering.restaurant.chinese',
+        'Coffee Shop': 'catering.cafe.coffee_shop',
+        'French': 'catering.restaurant.french',
+        'German': 'catering.restaurant.german',
+        'Ice Cream Shop': 'catering.ice_cream',
+        'Italian': 'catering.restaurant.italian',
+        'Japanese': 'catering.restaurant.japanese',
+        'Korean': 'catering.restaurant.korean',
+        'Mexican': 'catering.restaurant.mexican',
+        'Peruvian': 'catering.restaurant.peruvian',
+        'Pizza': 'catering.restaurant.pizza',
+        'Portuguese': 'catering.restaurant.portuguese',
+        'Seafood': 'catering.restaurant.seafood',
+        'Spanish': 'catering.restaurant.spanish',
+        'Vegetarian': 'catering.restaurant.vegetarian',
+        'Other': 'catering.restaurant'
+      };
+
+      const apiCategory = categoriesMap[cuisine] || 'catering.restaurant';
+      let placeId = null;
+      
+      if (neighborhood !== 'Any') {
+          placeId = await getNeighborhoodId(neighborhood);
+      }
+      
+      let listContentHtml = "";
+
+      if (placeId || neighborhood === 'Any') {
+        const places = await getEstablishment(placeId, apiCategory);
+        
+        if (places && places.length > 0) {
+            listContentHtml = `<ul class="list-group">`;
+            places.forEach(restaurantName => {
+                if (restaurantName) {
                     const encodedNeighborhood = encodeURIComponent(neighborhood);
                     const encodedCuisine = encodeURIComponent(cuisine);
-                    const encodedREstaurantName = encodeURIComponent(restaurantName);
+                    const encodedRestaurantName = encodeURIComponent(restaurantName);
 
-                    restaurantNamesList += `
-                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    <span class="fw-bold text-start ms-3">${restaurantName}</span>
-                                                    <a href="/view?neighborhood=${encodedNeighborhood}&cuisine=${encodedCuisine}&restaurantName=${encodedREstaurantName}" 
-                                                    class="text-primary text-decoration-none me-3" 
-                                                    style="font-size: 0.9rem; white-space: nowrap; margin-left: 15px;">
-                                                    See the reviews <i class="bi bi-arrow-right"></i>
-                                                    </a>
-                                                </li>
-                                            `;
+                    listContentHtml += `
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="fw-bold text-start ms-3">${restaurantName}</span>
+                                                <a href="/view?neighborhood=${encodedNeighborhood}&cuisine=${encodedCuisine}&restaurantName=${encodedRestaurantName}" 
+                                                class="text-primary text-decoration-none me-3" 
+                                                style="font-size: 0.9rem; white-space: nowrap; margin-left: 15px;">
+                                                See the reviews <i class="bi bi-arrow-right"></i>
+                                                </a>
+                                            </li>
+                                        `;
                 }
             });
-            restaurantNamesList += `</ul>`;
-
-            if (neighborhood === "Any") {
-                apiSectionHtml = `
-                                    <div class="mb-5">
-                                        <h1 class="fw-bold mb-3">All ${cuisine} establishments 🔎</h1>
-                                        <div id="apiResultsContainer"> 
-                                            ${restaurantNamesList} 
-                                        </div>
-                                    </div>
-                                    <hr class="my-5">
-                                `;
-            } else if (cuisine === "Any") {
-                apiSectionHtml = `
-                                    <div class="mb-5">
-                                        <h1 class="fw-bold mb-3">All establishments in ${neighborhood} 🔎</h1>
-                                        <div id="apiResultsContainer"> 
-                                            ${restaurantNamesList} 
-                                        </div>
-                                    </div>
-                                    <hr class="my-5">
-                                `;
-            } else {
-                apiSectionHtml = `
-                                    <div class="mb-5">
-                                        <h1 class="fw-bold mb-3">All ${cuisine} establishments in ${neighborhood} 🔎</h1>
-                                        <div id="apiResultsContainer"> 
-                                            ${restaurantNamesList} 
-                                        </div>
-                                    </div>
-                                    <hr class="my-5">
-                                `;
-            }
-            
+            listContentHtml += `</ul>`;
         } else {
-            apiSectionHtml = `
-                                <div class="mb-5">
-                                    <h1 class="fw-bold mb-3 fs-2">Unfortunately, the API has no ${cuisine} establishments registered in ${neighborhood} 😢</h1>
-                                </div>
-                                <hr class="my-5">
-                            `;
+            listContentHtml = `<p class="text-center mt-4">No places found for ${cuisine} in ${neighborhood}.</p>`;
         }
+      } else {
+         listContentHtml = `<p class="text-center mt-4 text-danger">Location not found.</p>`;
+      }
+
+      viewContentHtml = `
+                            <div class="mb-5">
+                                <h1 class="fw-bold mb-3 text-center">Restaurants found 🔎</h1>
+                                <div id="apiResultsContainer"> 
+                                    ${listContentHtml} 
+                                </div>
+                            </div> 
+                        `;
     }
+
   } catch (error) {
     console.error(error);
-    restaurantNamesList = "<p>Error loading API data.</p>";
+    viewContentHtml = "<p>Error loading data.</p>";
   }
 
   res.render("index.ejs", {
     viewSection: `
                     <div class="container-fluid" id="viewScreen">
                         <div class="container" id="viewTextContainer">
-                            ${apiSectionHtml}
-                            <div>
-                                <h1 class="fw-bold mb-3">Community Reviews 👨‍🍳</h1>
-                                <div id="postsContainer" class="mt-4"></div>
-                            </div>
+                            ${viewContentHtml}
                         </div>
                     </div>
                 `
