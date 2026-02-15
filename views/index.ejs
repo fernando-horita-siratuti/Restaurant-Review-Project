@@ -85,11 +85,6 @@
         return;
       }
 
-      if (selectedNeighborhood === "Any" && selectedCuisine === "Any") {
-        alert("Please specify a neighborhood or a cuisine type to continue.");
-        return;
-      }
-
       const qn = encodeURIComponent(selectedNeighborhood);
       const qc = encodeURIComponent(selectedCuisine);
       window.location.href = `/view?neighborhood=${qn}&cuisine=${qc}`;

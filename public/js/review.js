@@ -6,7 +6,7 @@ const RATING_TEXTS_KEY = "ratings";
 const REVIEW_TEXTS_KEY = "reviewTexts";
 
 const usernamesWrite = JSON.parse(localStorage.getItem(USERNAMES_KEY) || "[]");
-const restaurantTextsWrite = JSON.parse(localStorage.getItem(RESTAURANT_TEXTS_KEY) || "[]");
+const restaurantNameWrite = JSON.parse(localStorage.getItem(RESTAURANT_TEXTS_KEY) || "[]");
 const neighborhoodsWrite = JSON.parse(localStorage.getItem(NEIGHBORHOOD_KEY) || "[]"); 
 const cuisinesWrite = JSON.parse(localStorage.getItem(CUISINE_KEY) || "[]"); 
 const ratingsWrite = JSON.parse(localStorage.getItem(RATING_TEXTS_KEY) || "[]"); 
@@ -14,7 +14,7 @@ const reviewTextsWrite = JSON.parse(localStorage.getItem(REVIEW_TEXTS_KEY) || "[
 
 function saveToStorage() {
   localStorage.setItem(USERNAMES_KEY, JSON.stringify(usernamesWrite));
-  localStorage.setItem(RESTAURANT_TEXTS_KEY, JSON.stringify(restaurantTextsWrite));
+  localStorage.setItem(RESTAURANT_TEXTS_KEY, JSON.stringify(restaurantNameWrite));
   localStorage.setItem(NEIGHBORHOOD_KEY, JSON.stringify(neighborhoodsWrite)); 
   localStorage.setItem(CUISINE_KEY, JSON.stringify(cuisinesWrite)); 
   localStorage.setItem(RATING_TEXTS_KEY, JSON.stringify(ratingsWrite));
@@ -27,7 +27,7 @@ function addUsername(username) {
 }
 
 function addRestaurantText(restaurantText) {
-  restaurantTextsWrite.push(('Restaurant: ' + capitalizeRestaurantName(restaurantText)).trim());
+  restaurantNameWrite.push(('Restaurant: ' + capitalizeRestaurantName(restaurantText)).trim());
   saveToStorage();
 }
 
@@ -76,10 +76,29 @@ function capitalizeRestaurantName(restaurantText) {
   }).join(' ');
 }
 
+async function verifyRestaurantRegionAndCuisine(restaurantName, neighborhood, cuisine) {
+    try {
+      const params = new URLSearchParams({
+          restaurantName: restaurantName,
+          neighborhood: neighborhood,
+          cuisine: cuisine
+      });
+      
+      const response = await fetch(`/api/verify-restaurant?${params.toString()}`);
+      const data = await response.json();
+
+      return data.valid;
+
+    } catch (error) {
+      console.error("Error verifying restaurant:", error);
+      return false;
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const button = document.querySelector("button.btn-primary.w-25");
 
-  button.addEventListener("click", (e) => {
+  button.addEventListener("click", async (e) => {
     e.preventDefault(); 
 
     const username = document.getElementById("usernameInput").value;
@@ -88,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const cuisine = document.getElementById("cuisineInput").value; 
     const rating = document.getElementById("ratingInput").value; 
     const reviewText = document.getElementById("reviewInput").value;
+    const isRestaurantValid = await verifyRestaurantRegionAndCuisine(restaurantText, neighborhood, cuisine);
 
     if (username.length < 1) { 
       alert("Please, enter your username."); 
@@ -98,8 +118,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return; 
     }
     if (neighborhood === "") { 
-      alert("Please, select a neighborhood."); return; } 
-    if (cuisine === "") { alert("Please, select a cuisine."); 
+      alert("Please, select a neighborhood."); 
+      return;
+    } 
+    if (cuisine === "") { 
+      alert("Please, select a cuisine."); 
       return; 
     } 
     if (rating.length < 1 || parseInt(rating) < 0 || parseInt(rating) > 10) { 
@@ -109,6 +132,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reviewText.length < 1) { 
       alert("Please, enter your review."); 
       return; 
+    }
+    if (isRestaurantValid === false) {
+      alert("The restaurant does not exist in the selected neighborhood and cuisine.");
+      return;
     }
 
     addUsername(username);
@@ -129,9 +156,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-function clearStorageManually() {
-  if (confirm("Tem certeza que deseja limpar todos os posts?")) {
-    localStorage.clear();
-    window.location.reload();
-  }
-}
+// function clearStorageManually() {
+//   if (confirm("Tem certeza que deseja limpar todos os posts?")) {
+//     localStorage.clear();
+//     window.location.reload();
+//   }
+// }

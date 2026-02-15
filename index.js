@@ -13,6 +13,57 @@ const apiKey = "d276a4f0050a44e3a292f0e3d4dabb3c";
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.get("/api/verify-restaurant", async (req, res) => {
+    const { restaurantName, neighborhood, cuisine } = req.query;
+
+    try {
+        let placeId = await getNeighborhoodId(neighborhood);
+
+        const categoriesMap = {
+            'Any': 'catering.restaurant',
+            'African': 'catering.restaurant.african',
+            'Arabic': 'catering.restaurant.arab',
+            'Argentinian': 'catering.restaurant.argentinian',
+            'Bar': 'catering.bar',
+            'Bakery': 'commercial.food_and_drink.bakery', 
+            'Brazilian': 'catering.restaurant.brazilian',
+            'Brazilian Barbecue': 'catering.restaurant.barbecue', 
+            'Burgers': 'catering.restaurant.burger',
+            'Chinese': 'catering.restaurant.chinese',
+            'Coffee Shop': 'catering.cafe.coffee_shop',
+            'French': 'catering.restaurant.french',
+            'German': 'catering.restaurant.german',
+            'Ice Cream Shop': 'catering.ice_cream',
+            'Italian': 'catering.restaurant.italian',
+            'Japanese': 'catering.restaurant.japanese',
+            'Korean': 'catering.restaurant.korean',
+            'Mexican': 'catering.restaurant.mexican',
+            'Peruvian': 'catering.restaurant.peruvian',
+            'Pizza': 'catering.restaurant.pizza',
+            'Portuguese': 'catering.restaurant.portuguese',
+            'Seafood': 'catering.restaurant.seafood',
+            'Spanish': 'catering.restaurant.spanish',
+            'Vegetarian': 'catering.restaurant.vegetarian',
+            'Other': 'catering.restaurant'
+        };
+        
+        const apiCategory = categoriesMap[cuisine];
+        const establishments = await getEstablishment(placeId, apiCategory);
+        const userInput = restaurantName.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        
+        const exists = establishments.some(name => {
+            const apiName = name.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return apiName === userInput; 
+        });
+
+        res.json({ valid: exists });
+
+    } catch (error) {
+        console.error("Verification error:", error);
+        res.json({ valid: false, error: "Intern error" });
+    }
+});
+
 app.get("/", (req, res) => {
   res.render("index.ejs", { 
     homeSection: `<section class="hero-section">
@@ -36,7 +87,6 @@ app.get("/", (req, res) => {
                                                     placeholder="Search neighborhood..." style="width: calc(100% - 1rem);"></li>
                                             <li><hr class="dropdown-divider"></li>
                                             <div id="neighborhoodList">
-                                                <li><a class="dropdown-item" href="" data-value="Any">Any</a></li>
                                                 <li><a class="dropdown-item" href="" data-value="Aclimação">Aclimação</a></li>
                                                 <li><a class="dropdown-item" href="" data-value="Bela Vista">Bela Vista</a></li>
                                                 <li><a class="dropdown-item" href="" data-value="Bom Retiro">Bom Retiro</a></li>
@@ -242,7 +292,7 @@ app.get("/view", async (req, res) => {
                             ${viewContentHtml}
                         </div>
                     </div>
-                `
+                 `
   });
 });
 
