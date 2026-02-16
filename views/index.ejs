@@ -85,6 +85,13 @@
         return;
       }
 
+      if (selectedNeighborhood === "Any" && selectedCuisine === "Any") {
+        alert("Please specify a neighborhood or a cuisine type to continue.");
+        neighborhoodBtn.classList.add('border', 'border-danger', 'border-2');
+        cuisineBtn.classList.add('border', 'border-danger', 'border-2');
+        return;
+      }
+
       const qn = encodeURIComponent(selectedNeighborhood);
       const qc = encodeURIComponent(selectedCuisine);
       window.location.href = `/view?neighborhood=${qn}&cuisine=${qc}`;

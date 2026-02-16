@@ -87,6 +87,7 @@ app.get("/", (req, res) => {
                                                     placeholder="Search neighborhood..." style="width: calc(100% - 1rem);"></li>
                                             <li><hr class="dropdown-divider"></li>
                                             <div id="neighborhoodList">
+                                                <li><a class="dropdown-item" href="" data-value="Any">Any</a></li>
                                                 <li><a class="dropdown-item" href="" data-value="Aclimação">Aclimação</a></li>
                                                 <li><a class="dropdown-item" href="" data-value="Bela Vista">Bela Vista</a></li>
                                                 <li><a class="dropdown-item" href="" data-value="Bom Retiro">Bom Retiro</a></li>
@@ -172,7 +173,11 @@ app.get("/", (req, res) => {
 app.get("/view", async (req, res) => {
   const neighborhood = req.query.neighborhood;
   const cuisine = req.query.cuisine;
-  const selectedRestaurant = req.query.restaurantName; 
+  const selectedRestaurant = req.query.restaurantName;
+  
+  const page = parseInt(req.query.page) || 1;
+  const itemsPerPage = 10;
+
   let viewContentHtml = `
                             <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
                                 <h1 class="text-center fw-bold" 
@@ -184,22 +189,24 @@ app.get("/view", async (req, res) => {
 
   try {
     if (selectedRestaurant) {
-        const backLink = `/view?neighborhood=${encodeURIComponent(neighborhood)}&cuisine=${encodeURIComponent(cuisine)}`;
+        const backLink = `/view?neighborhood=${encodeURIComponent(neighborhood)}&cuisine=${encodeURIComponent(cuisine)}&page=${page}`;
         
         viewContentHtml = `
-                                <div class="container mt-4">
-                                    <h1 id="reviewsTitle" class="fw-bold mb-3 text-center" style="color: #382f2f; display: none;">
-                                        Community Reviews for "${selectedRestaurant}" 👨‍🍳
-                                    </h1>
-                                    <div id="postsContainer" class="mt-4"></div>
-                                    <div class="text-center mt-5 mb-4">
-                                        <a href="${backLink}" class="btn px-4 py-2 fw-bold shadow-sm" 
-                                        style="background-color: #382f2f; color: white; border-radius: 8px;">
-                                            <i class="bi bi-arrow-left me-2"></i> Back to restaurant list
-                                        </a>
-                                    </div>
-                                </div>
-                            `;
+            <div class="container mt-4">
+                <h1 id="reviewsTitle" class="fw-bold mb-3 text-center" style="color: #382f2f; display: none;">
+                    Community Reviews for "${selectedRestaurant}" 👨‍🍳
+                </h1>
+                
+                <div id="postsContainer" class="mt-4"></div>
+
+                <div class="text-center mt-5 mb-4">
+                    <a href="${backLink}" class="btn px-4 py-2 fw-bold shadow-sm" 
+                       style="background-color: #382f2f; color: white; border-radius: 8px;">
+                        <i class="bi bi-arrow-left me-2"></i> Back to restaurant list
+                    </a>
+                </div>
+            </div>
+        `;
     } else if (neighborhood && cuisine) {
         const categoriesMap = {
             'Any': 'catering.restaurant',
@@ -229,21 +236,29 @@ app.get("/view", async (req, res) => {
             'Other': 'catering.restaurant'
         };
 
-        const apiCategory = categoriesMap[cuisine] || 'catering.restaurant';
-        let placeId = null;
+        const apiCategory = categoriesMap[cuisine];
         
-        if (neighborhood !== 'Any') {
+        let placeId = null;
+        if (neighborhood === 'Any') {
+            placeId = await getNeighborhoodId("São Paulo");
+        } else {
             placeId = await getNeighborhoodId(neighborhood);
         }
         
         let listContentHtml = "";
 
-        if (placeId || neighborhood === 'Any') {
-            const places = await getEstablishment(placeId, apiCategory);
+        if (placeId) {
+            const allEstablishments = await getEstablishment(placeId, apiCategory);
             
-            if (places && places.length > 0) {
+            if (allEstablishments && allEstablishments.length > 0) {
+                const totalResults = allEstablishments.length;
+                const totalPages = Math.ceil(totalResults / itemsPerPage);
+                const startIndex = (page - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedEstablishments = allEstablishments.slice(startIndex, endIndex);
+
                 listContentHtml = `<ul class="list-group">`;
-                places.forEach(restaurantName => {
+                paginatedEstablishments.forEach(restaurantName => {
                     if (restaurantName) {
                         const encodedNeighborhood = encodeURIComponent(neighborhood);
                         const encodedCuisine = encodeURIComponent(cuisine);
@@ -252,7 +267,7 @@ app.get("/view", async (req, res) => {
                         listContentHtml += `
                                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                                     <span class="fw-bold text-start ms-3">${restaurantName}</span>
-                                                    <a href="/view?neighborhood=${encodedNeighborhood}&cuisine=${encodedCuisine}&restaurantName=${encodedRestaurantName}" 
+                                                    <a href="/view?neighborhood=${encodedNeighborhood}&cuisine=${encodedCuisine}&restaurantName=${encodedRestaurantName}&page=${page}" 
                                                     class="text-primary text-decoration-none me-3" 
                                                     style="font-size: 0.9rem; white-space: nowrap; margin-left: 15px;">
                                                     See the reviews <i class="bi bi-arrow-right"></i>
@@ -262,35 +277,67 @@ app.get("/view", async (req, res) => {
                     }
                 });
                 listContentHtml += `</ul>`;
+
+                const encodedNeighborhood = encodeURIComponent(neighborhood);
+                const encodedCuisine = encodeURIComponent(cuisine);
+                
+                let paginationHtml = `<div class="d-flex justify-content-center align-items-end gap-4 mt-5">`;
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const isActive = (i === page);
+                    const color = isActive ? '#382f2f' : '#d4c598'; 
+                    const transform = isActive ? 'scale(1.3)' : 'scale(1)';
+                    const opacity = isActive ? '1' : '0.6'; 
+
+                    const pageLink = `/view?neighborhood=${encodedNeighborhood}&cuisine=${encodedCuisine}&page=${i}`;
+
+                    paginationHtml += `
+                        <a href="${pageLink}" class="text-decoration-none d-flex flex-column align-items-center" 
+                        style="transition: all 0.3s ease; transform: ${transform}; opacity: ${opacity};">
+                            
+                            <img src="/images/chefHat.png" alt="Page ${i}" width="45" height="45">
+
+                            <span class="fw-bold mt-2" style="color: ${color}; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">
+                                ${i}
+                            </span>
+                        </a>
+                    `;
+                }
+
+                paginationHtml += `</div>`;
+                
+                listContentHtml += paginationHtml;
+
             } else {
-                listContentHtml = `<h2 class="text-center mt-4">No places found for ${cuisine} in ${neighborhood}.</h2>`;
+                listContentHtml = `<p class="text-center mt-4">No places found for ${cuisine} in ${neighborhood}.</p>`;
             }
         } else {
             listContentHtml = `<p class="text-center mt-4 text-danger">Location not found.</p>`;
         }
 
         viewContentHtml = `
-                                <div class="mb-5">
-                                    <h1 class="fw-bold mb-3 text-center">Restaurants found 🔎</h1>
-                                    <div id="apiResultsContainer"> 
-                                        ${listContentHtml} 
-                                    </div>
-                                </div> 
-                            `;
+            <div class="mb-5">
+                <h1 class="fw-bold mb-3 text-center">Restaurants found 🔎</h1>
+                <div id="apiResultsContainer"> 
+                    ${listContentHtml} 
+                </div>
+            </div>
+        `;
     }
+
   } catch (error) {
-        console.error(error);
-        viewContentHtml = "<p>Error loading data.</p>";
+    console.error(error);
+    viewContentHtml = "<p>Error loading data.</p>";
   }
 
   res.render("index.ejs", {
     viewSection: `
-                    <div class="container-fluid" id="viewScreen">
-                        <div class="container" id="viewTextContainer">
-                            ${viewContentHtml}
-                        </div>
-                    </div>
-                 `
+          <div class="container-fluid" id="viewScreen">
+            <div class="container" id="viewTextContainer">
+                ${viewContentHtml}
+            </div>
+          </div>
+        `
   });
 });
 
@@ -406,7 +453,7 @@ async function getNeighborhoodId(neighborhood, cidade = "São Paulo") {
 
 async function getEstablishment(neighborhoodId, category) {
     try {
-        const url = `https://api.geoapify.com/v2/places?categories=${category}&filter=place:${neighborhoodId}&apiKey=${apiKey}`;
+        const url = `https://api.geoapify.com/v2/places?categories=${category}&filter=place:${neighborhoodId}&apiKey=${apiKey}&limit=100`;
         const res = await axios.get(url);
         const body = res.data;
 
@@ -416,7 +463,7 @@ async function getEstablishment(neighborhoodId, category) {
 
         let establishmentNames = body.features.map((item) => item.properties.name);
         
-        establishmentNames.sort();
+        establishmentNames = [...new Set(establishmentNames)].sort();
         
         return establishmentNames;
     } catch (err) {
