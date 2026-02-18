@@ -82,7 +82,7 @@ function updateUI() {
                           <h5 class="card-subtitle mb-1 fw-bold" style="color: #382f2f;">Restaurant: ${rest}</h5>
                           <p class="text-muted mb-2 fs-6" style="font-size: 0.9rem;">📍 ${neigh} &nbsp; | &nbsp; 🍽️ ${cuis} &nbsp; | &nbsp; 💵 ${price}</p>
                           <h5 class="card-subtitle mb-2 fw-bold" style="color: #382f2f;">Rating: ${rate}</h5>
-                          <p class="card-text mt-3">${review}</p>
+                          <p class="card-text mt-3" style="white-space: pre-wrap;">${review}</p>
                         `;
     
     bodyDiv.innerHTML = htmlContent;
