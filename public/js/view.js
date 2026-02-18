@@ -49,6 +49,10 @@ function updateUI() {
   const count = Math.max(usernames.length, restaurantTexts.length);
   let reviewsFound = false;
 
+  function clearText(text) {
+    return text.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  }
+  
   for (let i = count - 1; i >= 0; i--) {
     const user = usernames[i] || "Anonymous";
     const rest = restaurantTexts[i] || "Restaurant";
@@ -57,10 +61,6 @@ function updateUI() {
     const price = prices[i] || "Price: N/A";
     const rate = ratings[i] || "Rating: N/A";
     const review = reviewTexts[i] || "N/A";
-
-    function clearText(text) {
-      return text.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-    }
 
     const restClean = clearText(rest);
     const targetClean = clearText(targetRestaurant);
@@ -93,13 +93,18 @@ function updateUI() {
   const titleElement = document.getElementById("reviewsTitle");
   
   if (reviewsFound) {
-    if (titleElement) titleElement.style.display = "block";
+    if (titleElement) {
+      titleElement.style.display = "block";
+    }
   } else {
-    if (titleElement) titleElement.style.display = "none";
+    if (titleElement) {
+      titleElement.style.display = "none";
+    }
+    const targetClean = clearText(targetRestaurant)[0].toUpperCase() + clearText(targetRestaurant).slice(1);
     
     container.innerHTML = `
                             <div class="text-center mt-3 fs-3 fw-bold text-muted">
-                              No community reviews yet for "${targetRestaurant}" :/
+                              No community reviews yet for "${targetClean}" :/
                             </div>
                           `;
   }
