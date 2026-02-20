@@ -2,8 +2,8 @@
 
 footer {
     margin-top: auto; 
-    min-height: 34vh; 
     background-color: #55514b; 
+    padding: 26px 0;
 }
 
 :root {
@@ -94,10 +94,6 @@ footer {
 
 .navbar .nav-link:hover {
     color: #f8f9fa; 
-}
-
-footer {
-    background-color: #55514b;
 }
 
 #viewScreen {

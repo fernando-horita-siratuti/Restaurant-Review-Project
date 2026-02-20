@@ -257,31 +257,110 @@ app.get("/view", async (req, res) => {
 
                 listContentHtml = `<ul class="list-group">`;
                 paginatedEstablishments.forEach(establishment => {
-                    const restaurantName = "­­­­­ ­" + establishment.name; // Invisible characters added to align with the adress 
+                    const restaurantName = "­­­­­ ­" + establishment.name;  // Invisible characters to align the restaurant name with the address
                     const restaurantAddress = establishment.address || "Address not available";
-                        if (restaurantName) {
-                            const encodedNeighborhood = encodeURIComponent(neighborhood);
-                            const encodedCuisine = encodeURIComponent(cuisine);
-                            const encodedRestaurantName = encodeURIComponent(restaurantName);
+                        
+                    if (restaurantName) {
+                        const encodedNeighborhood = encodeURIComponent(neighborhood);
+                        const encodedCuisine = encodeURIComponent(cuisine);
+                        const encodedRestaurantName = encodeURIComponent(restaurantName);
 
-                            listContentHtml += `
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                        <div class="ms-3 text-start">
-                                                            <span class="fw-bold d-block fs-5">${restaurantName}</span>
-                                                            <span class="text-muted fw-bold" style="font-size: 0.85rem;">
-                                                                📍 ${restaurantAddress}
-                                                            </span>
-                                                        </div>
-                                                        <a href="/view?neighborhood=${encodedNeighborhood}&cuisine=${encodedCuisine}&restaurantName=${encodedRestaurantName}&page=${page}" 
-                                                        class="text-primary text-decoration-none me-3" 
-                                                        style="font-size: 0.9rem; white-space: nowrap; margin-left: 15px;">
-                                                        See the reviews <i class="bi bi-arrow-right"></i>
-                                                        </a>
-                                                    </li>
-                                                `;
-                        }
+                        listContentHtml += `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="ms-3 text-start">
+                                    <span class="fw-bold d-block fs-5">
+                                        ${restaurantName}
+                                        <span class="restaurant-stats fs-5 fw-bold" data-restaurant-name="${establishment.name}">
+                                            <span class="text-muted" style="font-size: 1.2rem;">| ⭐ Unrated | 💵 Unrated</span>
+                                        </span>
+                                    </span>
+                                    <span class="text-muted fw-bold" style="font-size: 0.85rem;">
+                                        📍 ${restaurantAddress}
+                                    </span>
+                                </div>
+                                <a href="/view?neighborhood=${encodedNeighborhood}&cuisine=${encodedCuisine}&restaurantName=${encodedRestaurantName}&page=${page}" 
+                                class="text-primary text-decoration-none me-3" 
+                                style="font-size: 0.9rem; white-space: nowrap; margin-left: 15px;">
+                                See the reviews <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </li>
+                        `;
+                    }
                 });
                 listContentHtml += `</ul>`;
+
+                listContentHtml += `<script>
+                    setTimeout(() => {
+                        const restTexts = JSON.parse(localStorage.getItem('restaurantTexts') || '[]');
+                        const ratings = JSON.parse(localStorage.getItem('ratings') || '[]');
+                        const prices = JSON.parse(localStorage.getItem('prices') || '[]');
+                        const stats = {};
+                        
+                        const extractRate = (str) => {
+                            if (!str) {
+                                return NaN;
+                            }
+                            const match = str.toString().replace(',', '.').match(/\\d+(\\.\\d+)?/);
+                            return match ? parseFloat(match[0]) : NaN;
+                        };
+
+                        const extractPrice = (str) => {
+                            if (!str) {
+                                return NaN;
+                            }
+                            const text = str.toString().replace(',', '.');
+
+                            const dollars = text.match(/\\$/g);
+                            if (dollars) {
+                                return dollars.length;
+                            }
+                            
+                            return NaN;
+                        };
+
+                        for(let i = 0; i < restTexts.length; i++) {
+                            if(!restTexts[i]) continue;
+                            
+                            const rawName = restTexts[i].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                            
+                            if (!stats[rawName]) {
+                                stats[rawName] = { sumRate: 0, countRate: 0, sumPrice: 0, countPrice: 0 };
+                            }
+                            
+                            const numRate = extractRate(ratings[i]);
+                            const numPrice = extractPrice(prices[i]);
+                            
+                            if (!isNaN(numRate)) { 
+                                stats[rawName].sumRate += numRate; 
+                                stats[rawName].countRate++; 
+                            }
+                            if (!isNaN(numPrice)) { 
+                                stats[rawName].sumPrice += numPrice; 
+                                stats[rawName].countPrice++; 
+                            }
+                        }
+
+                        document.querySelectorAll('.restaurant-stats').forEach(span => {
+                            const originalName = span.getAttribute('data-restaurant-name') || '';
+                            const cleanName = originalName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                            const data = stats[cleanName];
+                            
+                            let txtRate = 'Unrated';
+                            let txtPrice = 'Unrated';
+
+                            if (data) {
+                                if (data.countRate > 0) {
+                                    txtRate = (data.sumRate / data.countRate).toFixed(1).replace('.', ',');
+                                }
+                                if (data.countPrice > 0) {
+                                    txtPrice = (data.sumPrice / data.countPrice).toFixed(1).replace('.', ',');
+                                }
+                            }
+
+                            span.innerHTML = '<span class="text-muted" style="font-size: 1.1rem;"> | ⭐ ' + txtRate + ' | 💵 ' + txtPrice + '</span>';
+                        });
+                    }, 100);
+                </script>`;
 
                 const encodedNeighborhood = encodeURIComponent(neighborhood);
                 const encodedCuisine = encodeURIComponent(cuisine);
