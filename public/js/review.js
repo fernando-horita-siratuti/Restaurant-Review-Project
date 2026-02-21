@@ -170,10 +170,3 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Your review was successfully posted!");
   });
 });
-
-// function clearStorageManually() {
-//   if (confirm("Tem certeza que deseja limpar todos os posts?")) {
-//     localStorage.clear();
-//     window.location.reload();
-//   }
-// }

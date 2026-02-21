@@ -7,9 +7,6 @@ const port = 3000;
 app.use(express.static("public"));
 
 const apiKey = "d276a4f0050a44e3a292f0e3d4dabb3c";
-// const config = {
-//   headers: { Authorization: `Bearer ${apiKey}` }
-// };
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -28,7 +25,7 @@ app.get("/api/verify-restaurant", async (req, res) => {
             'Bakery': 'commercial.food_and_drink.bakery', 
             'Brazilian': 'catering.restaurant.brazilian',
             'Brazilian Barbecue': 'catering.restaurant.barbecue', 
-            'Burgers': 'catering.restaurant.burger',
+            'Burger': 'catering.restaurant.burger',
             'Chinese': 'catering.restaurant.chinese',
             'Coffee Shop': 'catering.cafe.coffee_shop',
             'French': 'catering.restaurant.french',
@@ -69,7 +66,7 @@ app.get("/", (req, res) => {
                     <div class="container">
                         <div class="hero-content mx-auto text-center">
                             <h1 class="hero-title">Dine SP</h1>
-                            <p class="hero-subtitle">
+                            <p class="hero-subtitle fw-bold">
                                 Find the finest restaurants in São Paulo, any dish at any price.
                             </p>
                             
@@ -136,7 +133,7 @@ app.get("/", (req, res) => {
                                                 <li><a class="dropdown-item" href="" data-value="Bakery">Bakery</a></li>
                                                 <li><a class="dropdown-item" href="" data-value="Brazilian">Brazilian</a></li>
                                                 <li><a class="dropdown-item" href="" data-value="Brazilian Barbecue">Brazilian Barbecue</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Burgers">Burgers</a></li>
+                                                <li><a class="dropdown-item" href="" data-value="Burger">Burger</a></li>
                                                 <li><a class="dropdown-item" href="" data-value="Chinese">Chinese</a></li>
                                                 <li><a class="dropdown-item" href="" data-value="Coffee Shop">Coffee Shop</a></li>
                                                 <li><a class="dropdown-item" href="" data-value="French">French</a></li>
@@ -216,7 +213,7 @@ app.get("/view", async (req, res) => {
             'Bakery': 'commercial.food_and_drink.bakery', 
             'Brazilian': 'catering.restaurant.brazilian',
             'Brazilian Barbecue': 'catering.restaurant.barbecue', 
-            'Burgers': 'catering.restaurant.burger',
+            'Burger': 'catering.restaurant.burger',
             'Chinese': 'catering.restaurant.chinese',
             'Coffee Shop': 'catering.cafe.coffee_shop',
             'French': 'catering.restaurant.french',
@@ -462,7 +459,7 @@ app.get("/view", async (req, res) => {
         viewContentHtml = `
                             <div class="mb-5">
                                 <div class="d-flex justify-content-center align-items-center position-relative mb-5">
-                                    <h1 class="fw-bold mb-0 text-center">Restaurants found 🔎</h1>
+                                    <h1 class="fw-bold mb-0 text-center">Restaurants Found 🔎</h1>
                                     
                                     <div class="position-absolute end-0">
                                         <div id="customSortDropdown" class="custom-dropdown-display shadow-sm">
@@ -557,7 +554,7 @@ app.get("/review", (req, res) => {
                                 <option value="Bakery">Bakery</option>
                                 <option value="Brazilian">Brazilian</option>
                                 <option value="Brazilian Barbecue">Brazilian Barbecue</option>
-                                <option value="Burgers">Burgers</option>
+                                <option value="Burger">Burger</option>
                                 <option value="Chinese">Chinese</option>
                                 <option value="Coffee Shop">Coffee Shop</option>
                                 <option value="French">French</option>
@@ -666,69 +663,3 @@ async function getEstablishment(neighborhoodId, category) {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
-// app.post("/get-secret", async (req, res) => {
-//   const searchId = req.body.id;
-
-//   try {
-//     const result = await axios.get(API_URL + "/secrets/" + searchId, config);
-//     res.render("index.ejs", { content: JSON.stringify(result.data) });
-//   } catch (error) {
-//     res.render("index.ejs", { content: JSON.stringify(error.response.data) });
-//   }
-// });
-
-// app.post("/post-secret", async (req, res) => {
-//   const body = {
-//     secret: req.body.secret,
-//     score: req.body.score
-//   };
-
-//   try {
-//     const result = await axios.post(API_URL + "/secrets/", body, config);
-//     res.render("index.ejs", { content: JSON.stringify(result.data) });
-//   } catch (error) {
-//     res.render("index.ejs", { content: JSON.stringify(error.response.data) });
-//   }
-// });
-
-// app.post("/put-secret", async (req, res) => {
-//   const searchId = req.body.id;
-//   const body = {
-//     secret: req.body.secret,
-//     score: req.body.score
-//   };
-
-//   try {
-//     const result = await axios.put(API_URL + "/secrets/" + searchId, body, config);
-//     res.render("index.ejs", { content: JSON.stringify(result.data) });
-//   } catch (error) {
-//     res.render("index.ejs", { content: JSON.stringify(error.response.data) });
-//   }
-// });
-
-// app.post("/patch-secret", async (req, res) => {
-//   const searchId = req.body.id;
-//   const body = {
-//     secret: req.body.secret,
-//     score: req.body.score
-//   };
-
-//   try {
-//     const result = await axios.patch(API_URL + "/secrets/" + searchId, body, config);
-//     res.render("index.ejs", { content: JSON.stringify(result.data) });
-//   } catch (error) {
-//     res.render("index.ejs", { content: JSON.stringify(error.response.data) });
-//   }
-// });
-
-// app.post("/delete-secret", async (req, res) => {
-//   const searchId = req.body.id;
-
-//   try {
-//     const result = await axios.delete(API_URL + "/secrets/" + searchId, config);
-//     res.render("index.ejs", { content: JSON.stringify(result.data) });
-//   } catch (error) {
-//     res.render("index.ejs", { content: JSON.stringify(error.response.data) });
-//   }
-// });

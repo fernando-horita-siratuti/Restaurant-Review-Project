@@ -104,7 +104,7 @@ function updateUI() {
     
     container.innerHTML = `
                             <div class="text-center mt-3 fs-3 fw-bold text-muted">
-                              No community reviews yet for "${targetClean}" :/
+                              No community reviews yet for "${targetClean}" 
                             </div>
                           `;
   }

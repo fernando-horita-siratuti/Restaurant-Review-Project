@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap');
 
 footer {
     margin-top: auto; 
@@ -9,6 +9,14 @@ footer {
 :root {
     --primary: #382f2f;
     --primary-glow: #382f2f;
+}
+
+body {
+    font-family: 'Poppins', sans-serif; 
+}
+
+h1, h2, h3, h4, h5, h6, .hero-title, .navbar-brand {
+    font-family: 'Lora', serif; 
 }
 
 .hero-section {
@@ -25,14 +33,22 @@ footer {
 }
 
 .hero-content {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: rgba(252, 251, 248, 0.85); 
+    
+    backdrop-filter: blur(12px);
+    
     border-radius: 20px;
     padding: 3rem;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.2);
     max-width: 800px;
     width: 100%;
+    
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    
+    box-shadow: 
+        0 10px 30px rgba(56, 47, 47, 0.08), 
+        0 30px 60px rgba(56, 47, 47, 0.12);  
 }
 
 .hero-title {
@@ -46,7 +62,7 @@ footer {
 }
 
 .hero-subtitle {
-    color: #6b7280;
+    color: #382f2f;
     font-size: 1.2rem;
     margin-bottom: 2rem;
 }
@@ -70,14 +86,77 @@ footer {
 }
 
 .dropdown-search {
-    border: 1px solid #e5e7eb;
+    background: white;
+    border: 1px solid #bbae87;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(5px);
+    color: #382f2f;
+    font-weight: 500;
+    padding: 10px 16px;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-.dropdown-item:hover {
-    background-color: rgba(139, 92, 246, 0.1);
+.dropdown-search:hover, 
+.dropdown-search:focus,
+.dropdown-search[aria-expanded="true"] {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-color: #382f2f;
+    background: white;
+    color: #382f2f;
+}
+
+.dropdown-menu {
+    background: white !important;
+    
+    border-radius: 16px !important; 
+    
+    padding: 12px !important; 
+    
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+
+.dropdown-menu .dropdown-item {
+    display: block;
+    
+    text-align: center !important; 
+    padding: 6px 10px !important; 
+    
+    border-radius: 8px;
+    color: #382f2f !important;
+    font-weight: 500;
+    font-size: 0.95rem;
+    background-color: #f2ebd9 !important; 
+    border: 1px solid #0f0f0f !important; 
+    
+    margin: 0 16px 8px 16px !important; 
+    
+    width: auto !important; 
+    
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu .dropdown-item:hover, 
+.dropdown-menu .dropdown-item:focus {
+    background-color: #bbae87 !important; 
+    color: #382f2f !important;
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
+}
+
+.dropdown-menu {
+    scrollbar-width: thin;
+    scrollbar-color: #bbae87 transparent;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+    background: transparent; 
+    margin-top: 12px; 
+    margin-bottom: 12px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+    background-color: #bbae87; 
+    border-radius: 20px; 
+    border: 2px solid white; 
 }
 
 .form-label {
@@ -104,7 +183,7 @@ footer {
 
 #viewTextContainer {
     text-align: center;
-    font-family: 'Raleway', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-weight: 500;
 }
 
@@ -116,7 +195,7 @@ footer {
 
 .reviewTexts {
     text-align: center;
-    font-family: 'Raleway', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-weight: 500;
     color: #382f2f;
 }
@@ -128,7 +207,7 @@ footer {
     color: #495057;
     text-align: center;
     
-    background-color: #ffffff;
+    background-color: #f2ebd9;
     border: none;
     border-radius: 16px;
     
@@ -148,8 +227,8 @@ footer {
 
 #apiResultsContainer .list-group-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    background-color: #fff;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    background-color: #bbae87;
     cursor: pointer;
 }
 
@@ -172,7 +251,7 @@ footer {
     padding: 8px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     z-index: 1000;
-    border: 1px solid #d4c598;
+    border: 1px solid #bbae87;
 }
 
 .custom-dropdown-options.show {
@@ -190,7 +269,7 @@ footer {
     font-weight: 500;
     font-size: 0.95rem;
     
-    background-color: #ffffff; 
+    background-color: #f2ebd9; 
     border: 1px solid #0f0f0f; 
     margin-bottom: 8px;
     
@@ -203,7 +282,6 @@ footer {
 
 .custom-dropdown-item:hover {
     background-color: #bbae87; 
-    border-color: #382f2f; 
     transform: translateY(-2px); 
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
 }
@@ -214,7 +292,6 @@ footer {
     align-items: center;
     width: 220px;
     border-radius: 8px;
-    border: 1px solid #d4c598;
     color: #382f2f;
     font-weight: 500;
     cursor: pointer;
