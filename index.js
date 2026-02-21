@@ -413,12 +413,40 @@ app.get("/view", async (req, res) => {
                                         pagHtml += '</div>';
                                         document.getElementById('dynamicPaginationContainer').innerHTML = pagHtml;
 
-                                        const dropdown = document.getElementById('sortDropdown');
-                                        if (dropdown) {
-                                            dropdown.value = currentSort; 
-                                            dropdown.addEventListener('change', (e) => {
-                                                const newSort = e.target.value;
-                                                window.location.href = \`/view?neighborhood=\${neighborhood}&cuisine=\${cuisine}&page=1&sort=\${newSort}\`;
+                                        const displayBox = document.getElementById('customSortDropdown');
+                                        const optionsBox = document.getElementById('customSortOptions');
+                                        const textBox = document.getElementById('customSortText');
+                                        const items = document.querySelectorAll('.custom-dropdown-item');
+
+                                        const labels = {
+                                            'alpha': 'A-Z (Default)',
+                                            'rating_desc': 'Highest Rated',
+                                            'price_asc': 'Lowest Price',
+                                            'price_desc': 'Highest Price'
+                                        };
+
+                                        if (displayBox && optionsBox) {
+                                            if (labels[currentSort]) {
+                                                textBox.innerText = labels[currentSort];
+                                            }
+
+                                            displayBox.addEventListener('click', (e) => {
+                                                e.stopPropagation();
+                                                optionsBox.classList.toggle('show');
+                                            });
+
+                                            document.addEventListener('click', (e) => {
+                                                if (!displayBox.contains(e.target) && !optionsBox.contains(e.target)) {
+                                                    optionsBox.classList.remove('show');
+                                                }
+                                            });
+
+                                            items.forEach(item => {
+                                                item.addEventListener('click', (e) => {
+                                                    const newSort = e.target.getAttribute('data-value');
+                                                    optionsBox.classList.remove('show');
+                                                    window.location.href = \`/view?neighborhood=\${neighborhood}&cuisine=\${cuisine}&page=1&sort=\${newSort}\`;
+                                                });
                                             });
                                         }
                                     </script>
@@ -436,12 +464,18 @@ app.get("/view", async (req, res) => {
                                 <div class="d-flex justify-content-center align-items-center position-relative mb-5">
                                     <h1 class="fw-bold mb-0 text-center">Restaurants found 🔎</h1>
                                     
-                                    <select id="sortDropdown" class="form-select shadow-sm position-absolute end-0" style="width: auto; border-radius: 8px; border-color: #d4c598; color: #382f2f; font-weight: 500; cursor: pointer;">
-                                        <option value="alpha">A-Z (Default)</option>
-                                        <option value="rating_desc">Highest Rated</option>
-                                        <option value="price_asc">Lowest Price</option>
-                                        <option value="price_desc">Highest Price</option>
-                                    </select>
+                                    <div class="position-absolute end-0">
+                                        <div id="customSortDropdown" class="custom-dropdown-display shadow-sm">
+                                            <span id="customSortText">A-Z (Default)</span>
+                                            <i class="bi bi-chevron-down ms-2"></i>
+                                        </div>
+                                        <div id="customSortOptions" class="custom-dropdown-options shadow-lg">
+                                            <div class="custom-dropdown-item" data-value="alpha">A-Z (Default)</div>
+                                            <div class="custom-dropdown-item" data-value="rating_desc">Highest Rated</div>
+                                            <div class="custom-dropdown-item" data-value="price_asc">Lowest Price</div>
+                                            <div class="custom-dropdown-item" data-value="price_desc">Highest Price</div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div id="apiResultsContainer"> 
