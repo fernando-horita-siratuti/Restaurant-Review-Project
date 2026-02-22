@@ -121,6 +121,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const restElement = document.getElementById("restaurantInput");
     const ratingElement = document.getElementById("ratingInput");
     const dateElement = document.getElementById("dateInput"); 
+    const dateInputEl = document.getElementById("dateInput");
+    const today = new Date();
+    const todayFormatted = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split("T")[0];
+    dateInputEl.setAttribute("max", todayFormatted);
     const reviewElement = document.getElementById("reviewInput");
 
     const neighHidden = document.getElementById("neighborhoodInput");
@@ -178,6 +182,11 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Please enter a valid date."); 
       dateElement.classList.add('border', 'border-danger', 'border-2');
       return; 
+    }
+    if (date > todayFormatted) {
+      dateElement.classList.add('border', 'border-danger', 'border-2');
+      alert("The date of your visit cannot be in the future.");
+      return;
     }
     if (reviewText.length < 1 || reviewText.length > 2000) { 
       alert("Please enter a valid review (1-2000 characters)."); 
