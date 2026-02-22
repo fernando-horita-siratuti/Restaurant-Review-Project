@@ -62,105 +62,106 @@ app.get("/api/verify-restaurant", async (req, res) => {
 
 app.get("/", (req, res) => {
   res.render("index.ejs", { 
-    homeSection: `<section class="hero-section">
-                    <div class="container">
-                        <div class="hero-content mx-auto text-center">
-                            <h1 class="hero-title">Dine SP</h1>
-                            <p class="hero-subtitle fw-bold">
-                                Find the finest restaurants in São Paulo, any dish at any price.
-                            </p>
-                            
-                            <form id="searchForm" class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label for="neighborhoodSelect" class="form-label">Neighborhoods</label>
-                                    <div class="dropdown">
-                                        <button class="btn dropdown-search dropdown-toggle w-100 text-start" type="button" 
-                                                id="neighborhoodSelect" data-bs-toggle="dropdown" aria-expanded="false">
-                                            Choose a neighborhood
-                                        </button>
-                                        <ul class="dropdown-menu w-100" style="max-height: 300px; overflow-y: auto;">
-                                            <li><input type="text" class="form-control mx-2 mb-2" id="searchNeighborhood" 
-                                                    placeholder="Search neighborhood..." style="width: calc(100% - 1rem);"></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <div id="neighborhoodList">
-                                                <li><a class="dropdown-item" href="" data-value="Any">Any</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Aclimação">Aclimação</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Bela Vista">Bela Vista</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Bom Retiro">Bom Retiro</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Brooklin">Brooklin</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Cambuci">Cambuci</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Campo Belo">Campo Belo</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Consolação">Consolação</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Higienópolis">Higienópolis</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Ipiranga">Ipiranga</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Itaim Bibi">Itaim Bibi</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Jardins">Jardins</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Lapa">Lapa</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Liberdade">Liberdade</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Moema">Moema</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Perdizes">Perdizes</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Pinheiros">Pinheiros</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Pompeia">Pompeia</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Santana">Santana</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Santo Amaro">Santo Amaro</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Saúde">Saúde</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Tatuapé">Tatuapé</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Vila Madalena">Vila Madalena</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Vila Mariana">Vila Mariana</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Vila Olímpia">Vila Olímpia</a></li>
-                                            </div>
-                                        </ul>
-                                    </div>
-                                </div>
+    homeSection: `
+                    <section class="hero-section">
+                        <div class="container">
+                            <div class="hero-content mx-auto text-center">
+                                <h1 class="hero-title">Dine SP</h1>
+                                <p class="hero-subtitle fw-bold">
+                                    Find the finest restaurants in São Paulo, any dish at any price.
+                                </p>
                                 
-                                <div class="col-md-6">
-                                    <label for="cuisineSelect" class="form-label">Cuisines</label>
-                                    <div class="dropdown">
-                                        <button class="btn dropdown-search dropdown-toggle w-100 text-start" type="button" 
-                                                id="cuisineSelect" data-bs-toggle="dropdown" aria-expanded="false">
-                                            Select the cuisine
-                                        </button>
-                                        <ul class="dropdown-menu w-100" style="max-height: 300px; overflow-y: auto;">
-                                            <li><input type="text" class="form-control mx-2 mb-2" id="searchCuisine" 
-                                                    placeholder="Search cuisine..." style="width: calc(100% - 1rem);"></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <div id="cuisineList">
-                                                <li><a class="dropdown-item" href="" data-value="Any">Any</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="African">African</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Arabic">Arabic</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Argentinian">Argentinian</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Bar">Bar</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Bakery">Bakery</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Brazilian">Brazilian</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Brazilian Barbecue">Brazilian Barbecue</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Burger">Burger</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Chinese">Chinese</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Coffee Shop">Coffee Shop</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="French">French</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="German">German</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Ice Cream Shop">Ice Cream Shop</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Italian">Italian</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Japanese">Japanese</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Korean">Korean</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Mexican">Mexican</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Peruvian">Peruvian</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Pizza">Pizza</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Portuguese">Portuguese</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Seafood">Seafood</a></li>
-                                                <li><a class="dropdown-item" href="" data-value="Spanish">Spanish</a></li>
-                                            </div>
-                                        </ul>
+                                <form id="searchForm" class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label for="neighborhoodSelect" class="form-label">Neighborhoods</label>
+                                        <div class="dropdown">
+                                            <button class="btn dropdown-search dropdown-toggle w-100 text-start" type="button" 
+                                                    id="neighborhoodSelect" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Choose a neighborhood
+                                            </button>
+                                            <ul class="dropdown-menu w-100" style="max-height: 300px; overflow-y: auto;">
+                                                <li><input type="text" class="form-control mx-2 mb-2" id="searchNeighborhood" 
+                                                        placeholder="Search neighborhood..." style="width: calc(100% - 1rem);"></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <div id="neighborhoodList">
+                                                    <li><a class="dropdown-item" href="" data-value="Any">Any</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Aclimação">Aclimação</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Bela Vista">Bela Vista</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Bom Retiro">Bom Retiro</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Brooklin">Brooklin</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Cambuci">Cambuci</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Campo Belo">Campo Belo</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Consolação">Consolação</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Higienópolis">Higienópolis</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Ipiranga">Ipiranga</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Itaim Bibi">Itaim Bibi</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Jardins">Jardins</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Lapa">Lapa</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Liberdade">Liberdade</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Moema">Moema</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Perdizes">Perdizes</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Pinheiros">Pinheiros</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Pompeia">Pompeia</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Santana">Santana</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Santo Amaro">Santo Amaro</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Saúde">Saúde</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Tatuapé">Tatuapé</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Vila Madalena">Vila Madalena</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Vila Mariana">Vila Mariana</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Vila Olímpia">Vila Olímpia</a></li>
+                                                </div>
+                                            </ul>
+                                        </div>
                                     </div>
-                                </div>
-                            </form>
-                            
-                            <button type="submit" class="search-btn" onclick="handleSearch()">
-                                <i class="bi bi-search me-2"></i>
-                                Search restaurants
-                            </button>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="cuisineSelect" class="form-label">Cuisines</label>
+                                        <div class="dropdown">
+                                            <button class="btn dropdown-search dropdown-toggle w-100 text-start" type="button" 
+                                                    id="cuisineSelect" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Select the cuisine
+                                            </button>
+                                            <ul class="dropdown-menu w-100" style="max-height: 300px; overflow-y: auto;">
+                                                <li><input type="text" class="form-control mx-2 mb-2" id="searchCuisine" 
+                                                        placeholder="Search cuisine..." style="width: calc(100% - 1rem);"></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <div id="cuisineList">
+                                                    <li><a class="dropdown-item" href="" data-value="Any">Any</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="African">African</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Arabic">Arabic</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Argentinian">Argentinian</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Bar">Bar</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Bakery">Bakery</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Brazilian">Brazilian</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Brazilian Barbecue">Brazilian Barbecue</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Burger">Burger</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Chinese">Chinese</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Coffee Shop">Coffee Shop</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="French">French</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="German">German</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Ice Cream Shop">Ice Cream Shop</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Italian">Italian</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Japanese">Japanese</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Korean">Korean</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Mexican">Mexican</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Peruvian">Peruvian</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Pizza">Pizza</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Portuguese">Portuguese</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Seafood">Seafood</a></li>
+                                                    <li><a class="dropdown-item" href="" data-value="Spanish">Spanish</a></li>
+                                                </div>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </form>
+                                
+                                <button type="submit" class="search-btn" onclick="handleSearch()">
+                                    <i class="bi bi-search me-2"></i>
+                                    Search restaurants
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                  </section>
+                    </section>
                 `
   });
 });
@@ -515,17 +516,15 @@ app.get("/review", (req, res) => {
                             </div>
                         </div>
 
-                        <div class="row g-4 mb-4">
+                        <div class="row g-3 mb-4">
                             
                             <div class="col-md-3 text-start">
-                            <label class="form-label review-label fw-bold">Neighborhood</label>
+                                <label class="form-label review-label fw-bold">Neighborhood</label>
                                 <div class="dropdown w-100">
                                     <input type="hidden" id="neighborhoodInput" value="">
-                                    
                                     <button class="btn elegant-input dropdown-toggle w-100 d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="dropdown-text">Choose a neighborhood</span>
+                                    <span class="dropdown-text">Neighborhood</span>
                                     </button>
-                                    
                                     <ul class="dropdown-menu w-100" style="max-height: 250px; overflow-y: auto;">
                                     <li><a class="dropdown-item" href="#" data-value="Aclimação">Aclimação</a></li>
                                     <li><a class="dropdown-item" href="#" data-value="Bela Vista">Bela Vista</a></li>
@@ -556,14 +555,12 @@ app.get("/review", (req, res) => {
                             </div>
 
                             <div class="col-md-3 text-start">
-                            <label class="form-label review-label fw-bold">Cuisine</label>
+                                <label class="form-label review-label fw-bold">Cuisine</label>
                                 <div class="dropdown w-100">
                                     <input type="hidden" id="cuisineInput" value="">
-                                    
                                     <button class="btn elegant-input dropdown-toggle w-100 d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="dropdown-text">Select the cuisine</span>
+                                    <span class="dropdown-text">Cuisine</span>
                                     </button>
-                                    
                                     <ul class="dropdown-menu w-100" style="max-height: 250px; overflow-y: auto;">
                                     <li><a class="dropdown-item" href="#" data-value="African">African</a></li>
                                     <li><a class="dropdown-item" href="#" data-value="Arabic">Arabic</a></li>
@@ -591,15 +588,13 @@ app.get("/review", (req, res) => {
                                 </div>
                             </div>
 
-                            <div class="col-md-3 text-start">
-                            <label class="form-label review-label fw-bold">Price Range</label>
+                            <div class="col-md-2 text-start">
+                                <label class="form-label review-label fw-bold">Price Range</label>
                                 <div class="dropdown w-100">
                                     <input type="hidden" id="priceInput" value="">
-                                    
                                     <button class="btn elegant-input dropdown-toggle w-100 d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="dropdown-text">Select the price range</span>
+                                    <span class="dropdown-text">Price Range</span>
                                     </button>
-                                    
                                     <ul class="dropdown-menu w-100">
                                     <li><a class="dropdown-item" href="#" data-value="$">$</a></li>
                                     <li><a class="dropdown-item" href="#" data-value="$$">$$</a></li>
@@ -610,16 +605,22 @@ app.get("/review", (req, res) => {
                                 </div>
                             </div>
 
-                            <div class="col-md-3 text-start">
-                            <label for="ratingInput" class="form-label review-label fw-bold">Rating (0-10)</label>
-                            <input type="number" class="form-control elegant-input" id="ratingInput" placeholder="Ex: 10" min="0" max="10">
+                            <div class="col text-start" style="flex: 0 0 12%; max-width: 12%;">
+                                <label for="ratingInput" class="form-label review-label fw-bold">Rating</label>
+                                <input type="number" class="form-control elegant-input" id="ratingInput" placeholder="Ex: 10" min="0" max="10" style="padding-left: 10px; padding-right: 10px;">
                             </div>
+
+                            <div class="col text-start" style="flex: 0 0 20.33%; max-width: 20.33%;">
+                                <label for="dateInput" class="form-label review-label fw-bold">Date Visited</label>
+                                <input type="date" class="form-control elegant-input" id="dateInput" style="padding-left: 10px; padding-right: 10px;"> 
+                            </div>
+
                         </div>
 
                         <div class="row mb-5">
                             <div class="col-12 text-start">
-                            <label for="reviewInput" class="form-label review-label fw-bold">Review (max 2000 characters)</label>
-                            <textarea class="form-control elegant-input" id="reviewInput" rows="6" placeholder="Ex: I really liked this place. The food was well-seasoned and fresh." maxlength="2000"></textarea>
+                                <label for="reviewInput" class="form-label review-label fw-bold">Review (max 2000 characters)</label>
+                                <textarea class="form-control elegant-input" id="reviewInput" rows="6" placeholder="Ex: I really liked this place. The food was well-seasoned and fresh." maxlength="2000"></textarea>
                             </div>
                         </div>
                         
@@ -638,10 +639,8 @@ app.get("/review", (req, res) => {
                             const text = this.innerText;
                             const dropdown = this.closest('.dropdown');
                             
-                            // Troca o texto do botão pelo que você clicou
                             dropdown.querySelector('.dropdown-text').innerText = text;
                             
-                            // Passa o valor silenciosamente para o input escondido
                             dropdown.querySelector('input[type="hidden"]').value = value;
                         });
                         });

@@ -4,6 +4,7 @@ const NEIGHBORHOOD_KEY = "neighborhoods";
 const CUISINE_KEY = "cuisines"; 
 const PRICE_KEY = "prices";
 const RATING_TEXTS_KEY = "ratings"; 
+const DATE_KEY = "dates";
 const REVIEW_TEXTS_KEY = "reviewTexts";
 
 function getArraysFromStorage() {
@@ -14,6 +15,7 @@ function getArraysFromStorage() {
     const cuisines = JSON.parse(localStorage.getItem(CUISINE_KEY) || "[]"); 
     const prices = JSON.parse(localStorage.getItem(PRICE_KEY) || "[]");
     const rates = JSON.parse(localStorage.getItem(RATING_TEXTS_KEY) || "[]");
+    const dates = JSON.parse(localStorage.getItem(DATE_KEY) || "[]");
     const reviews = JSON.parse(localStorage.getItem(REVIEW_TEXTS_KEY) || "[]");
 
     return { 
@@ -23,11 +25,12 @@ function getArraysFromStorage() {
       cuisines: cuisines,
       prices: prices,
       ratings: rates, 
+      dates: dates,
       reviewTexts: reviews 
     };
   } catch (err) {
     console.error("Error localStorage:", err);
-    return { usernames: [], restaurantTexts: [], neighborhoods: [], cuisines: [], prices: [], ratings: [], reviewTexts: [] };
+    return { usernames: [], restaurantTexts: [], neighborhoods: [], cuisines: [], prices: [], ratings: [], dates: [], reviewTexts: [] };
   }
 }
 
@@ -43,7 +46,7 @@ function updateUI() {
     return; 
   }
 
-  const { usernames, restaurantTexts, neighborhoods, cuisines, prices, ratings, reviewTexts } = getArraysFromStorage();
+  const { usernames, restaurantTexts, neighborhoods, cuisines, prices, ratings, dates, reviewTexts } = getArraysFromStorage();
   container.innerHTML = "";
 
   const count = Math.max(usernames.length, restaurantTexts.length);
@@ -60,6 +63,7 @@ function updateUI() {
     const cuis = cuisines[i] || "Unknown"; 
     const price = prices[i] || "Price: N/A";
     const rate = ratings[i] || "Rating: N/A";
+    const date = dates[i] || "Date: N/A";
     const review = reviewTexts[i] || "N/A";
 
     const restClean = clearText(rest);
@@ -80,7 +84,7 @@ function updateUI() {
     const htmlContent = `
                           <h3 class="card-title fw-bold" style="color: #382f2f;">Username: ${user}</h3>
                           <h5 class="card-subtitle mb-1 fw-bold" style="color: #382f2f;">Restaurant: ${rest}</h5>
-                          <p class="text-muted mb-2 fs-6" style="font-size: 0.9rem;">📍 ${neigh} &nbsp; | &nbsp; 🍽️ ${cuis} &nbsp; | &nbsp; 💵 ${price}</p>
+                          <p class="text-muted mb-2 fs-6" style="font-size: 0.9rem;">📍 ${neigh} &nbsp; | &nbsp; 🍽️ ${cuis} &nbsp; | &nbsp; 💵 ${price} &nbsp; | &nbsp; 📅 ${date}</p>
                           <h5 class="card-subtitle mb-2 fw-bold" style="color: #382f2f;">Rating: ${rate}</h5>
                           <p class="card-text mt-3" style="white-space: pre-wrap;">${review}</p>
                         `;

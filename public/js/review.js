@@ -4,6 +4,7 @@ const NEIGHBORHOOD_KEY = "neighborhoods";
 const CUISINE_KEY = "cuisines"; 
 const PRICE_KEY = "prices";
 const RATING_TEXTS_KEY = "ratings"; 
+const DATE_KEY = "dates";
 const REVIEW_TEXTS_KEY = "reviewTexts";
 
 const usernamesWrite = JSON.parse(localStorage.getItem(USERNAMES_KEY) || "[]");
@@ -12,6 +13,7 @@ const neighborhoodsWrite = JSON.parse(localStorage.getItem(NEIGHBORHOOD_KEY) || 
 const cuisinesWrite = JSON.parse(localStorage.getItem(CUISINE_KEY) || "[]"); 
 const pricesWrite = JSON.parse(localStorage.getItem(PRICE_KEY) || "[]");
 const ratingsWrite = JSON.parse(localStorage.getItem(RATING_TEXTS_KEY) || "[]"); 
+const datesWrite = JSON.parse(localStorage.getItem(DATE_KEY) || "[]");
 const reviewTextsWrite = JSON.parse(localStorage.getItem(REVIEW_TEXTS_KEY) || "[]");
 
 function saveToStorage() {
@@ -21,6 +23,7 @@ function saveToStorage() {
   localStorage.setItem(CUISINE_KEY, JSON.stringify(cuisinesWrite)); 
   localStorage.setItem(PRICE_KEY, JSON.stringify(pricesWrite));
   localStorage.setItem(RATING_TEXTS_KEY, JSON.stringify(ratingsWrite));
+  localStorage.setItem(DATE_KEY, JSON.stringify(datesWrite));
   localStorage.setItem(REVIEW_TEXTS_KEY, JSON.stringify(reviewTextsWrite));
 }
 
@@ -73,6 +76,11 @@ function addRating(rating) {
   saveToStorage();
 }
 
+function addDate(date) {
+  datesWrite.push(date);
+  saveToStorage();
+}
+
 function addReviewText(reviewText) {
   reviewTextsWrite.push(reviewText.trim());
   saveToStorage();
@@ -112,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const userElement = document.getElementById("usernameInput");
     const restElement = document.getElementById("restaurantInput");
     const ratingElement = document.getElementById("ratingInput");
+    const dateElement = document.getElementById("dateInput"); 
     const reviewElement = document.getElementById("reviewInput");
 
     const neighHidden = document.getElementById("neighborhoodInput");
@@ -123,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const priceHidden = document.getElementById("priceInput");
     const priceBtn = priceHidden.closest('.dropdown').querySelector('.dropdown-toggle');
 
-    const allElements = [userElement, restElement, neighBtn, cuisineBtn, priceBtn, ratingElement, reviewElement];
+    const allElements = [userElement, restElement, neighBtn, cuisineBtn, priceBtn, ratingElement, dateElement, reviewElement];
     allElements.forEach(el => el.classList.remove('border', 'border-danger', 'border-2'));
 
     const username = userElement.value;
@@ -132,6 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const cuisine = cuisineHidden.value;
     const price = priceHidden.value; 
     const rating = ratingElement.value; 
+    const date = dateElement.value;
     const reviewText = reviewElement.value;
 
     if (username.length < 1 || username.length > 200) { 
@@ -164,6 +174,11 @@ document.addEventListener("DOMContentLoaded", () => {
       ratingElement.classList.add('border', 'border-danger', 'border-2');
       return; 
     }
+    if (date === "") { 
+      alert("Please enter a valid date."); 
+      dateElement.classList.add('border', 'border-danger', 'border-2');
+      return; 
+    }
     if (reviewText.length < 1 || reviewText.length > 2000) { 
       alert("Please enter a valid review (1-2000 characters)."); 
       reviewElement.classList.add('border', 'border-danger', 'border-2');
@@ -180,17 +195,22 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const [year, month, day] = date.split('-');
+    const brazilianDate = `${day}/${month}/${year}`;
+
     addUsername(username);
     addRestaurantText(restaurantText);
     addNeighborhood(neighborhood); 
     addCuisine(cuisine); 
     addPrice(price);
     addRating(rating); 
+    addDate(brazilianDate);
     addReviewText(reviewText);
     
     userElement.value = "";
     restElement.value = "";
     ratingElement.value = "";
+    dateElement.value = "";
     reviewElement.value = "";
     
     neighHidden.value = ""; 
