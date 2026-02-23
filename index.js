@@ -63,6 +63,7 @@ app.get("/api/verify-restaurant", async (req, res) => {
 
 app.get("/", (req, res) => {
     res.render("index.ejs", { 
+        activePage: "home",
         homeSection: `
                         <section class="hero-section">
                             <div class="container">
@@ -488,6 +489,7 @@ app.get("/view", async (req, res) => {
     }
 
     res.render("index.ejs", {
+        activePage: "view",
         viewSection: `
                         <div class="container-fluid" id="viewScreen">
                             <div class="container" id="viewTextContainer">
@@ -500,6 +502,7 @@ app.get("/view", async (req, res) => {
 
 app.get("/review", (req, res) => {
     res.render("index.ejs", {
+        activePage: "review",
         reviewSection: `
                         <div id="reviewScreen" class="d-flex justify-content-center">
                             <form id="postForm" class="w-100" style="max-width: 900px;">

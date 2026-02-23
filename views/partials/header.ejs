@@ -21,13 +21,13 @@
         <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
           <ul class="navbar-nav align-items-center">
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="/"><h1>Home</h1></a>
+              <a class="nav-link <%= activePage === 'home' ? 'active-link' : '' %>" href="/"><h1>Home</h1></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/view"><h1>View</h1></a>
+              <a class="nav-link <%= activePage === 'view' ? 'active-link' : '' %>" href="/view"><h1>View</h1></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/review"><h1>Review</h1></a>
+              <a class="nav-link <%= activePage === 'review' ? 'active-link' : '' %>" href="/review"><h1>Review</h1></a>
             </li>
           </ul>
         </div>

@@ -161,6 +161,25 @@ h1, h2, h3, h4, h5, h6, .hero-title, .navbar-brand {
     font-weight: 600;
 }
 
+.navbar .nav-link.active-link {
+    color: #f8f9fa; 
+}
+
+.navbar .nav-link.active-link h1 {
+    position: relative;
+}
+
+.navbar .nav-link.active-link h1::after {
+    content: '';
+    position: absolute;
+    bottom: -5px; 
+    left: 10%;
+    width: 80%;
+    height: 3px;
+    background-color: #bbae87;
+    border-radius: 2px;
+}
+
 .navbar {
     background-color: #55514b; 
 }
