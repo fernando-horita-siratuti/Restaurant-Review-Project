@@ -100,8 +100,6 @@ h1, h2, h3, h4, h5, h6, .hero-title, .navbar-brand {
 .dropdown-search[aria-expanded="true"] {
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     border-color: #382f2f;
-    background: white;
-    color: #382f2f;
 }
 
 .dropdown-menu {
@@ -175,7 +173,7 @@ h1, h2, h3, h4, h5, h6, .hero-title, .navbar-brand {
     color: #f8f9fa; 
 }
 
-#viewScreen {
+#viewScreen, #reviewScreen {
     min-height: 55.3vh;
     padding: 30px;
     background-color: #55514b;
@@ -185,12 +183,6 @@ h1, h2, h3, h4, h5, h6, .hero-title, .navbar-brand {
     text-align: center;
     font-family: 'Poppins', sans-serif;
     font-weight: 500;
-}
-
-#reviewScreen {
-    min-height: 55.3vh;
-    padding: 30px;
-    background-color: #55514b;
 }
 
 .reviewTexts {
@@ -210,8 +202,7 @@ h1, h2, h3, h4, h5, h6, .hero-title, .navbar-brand {
     border: none;
     border-radius: 16px;
     
-    max-width: 600px; 
-    width: 100%;      
+    max-width: 600px;    
     margin-left: auto;  
     margin-right: auto; 
     
@@ -376,7 +367,7 @@ h1, h2, h3, h4, h5, h6, .hero-title, .navbar-brand {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .hero-title {
         font-size: 2.5rem;
     }
