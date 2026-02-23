@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import express from "express";
 import axios from "axios";
 import bodyParser from "body-parser";
@@ -6,7 +8,7 @@ const app = express();
 const port = 3000;
 app.use(express.static("public"));
 
-const apiKey = "d276a4f0050a44e3a292f0e3d4dabb3c";
+const apiKey = process.env.GEOAPIFY_API_KEY;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
