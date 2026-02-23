@@ -19,22 +19,24 @@ A full-stack web application designed for users to explore, view and post review
 
 ---
 
-## Table of Contents
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Data Sources](#data-sources)
-- [Basic Usage](#basic-usage)
-- [Project Structure](#project-structure)
-- [Technical Details](#technical-details)
-- [Project Limitations](#project-limitations)
-- [Future Improvements](#future-improvements)
-- [License](#license)
-- [Contact Me](#contact-me)
+## 📑 Table of Contents
+- [🎯 Features](#features)
+- [📸 Preview](#preview)
+- [📋 Requirements](#requirements)
+- [🚀 Installation](#installation)
+- [🗄️ Data Sources](#data-sources)
+- [💡 Basic Usage](#basic-usage)
+- [📁 Project Structure](#project-structure)
+- [⚙️ Technical Details](#technical-details)
+- [⚠️ Project Limitations](#project-limitations)
+- [🗺️ Future Improvements](#future-improvements)
+- [📄 License](#license)
+- [💭 Credits](#credits)
+- [📬 Contact Me](#contact-me)
 
 ---
 
-## Features
+## <a id="features"></a>🎯 Features
 
 - **Dynamic Restaurant Search**: Filter establishments by specific neighborhoods and cuisines in São Paulo.
 - **Smart Sorting System**: Order restaurant results by A-Z (Default), Highest Rated, Lowest Price or Highest Price.
@@ -43,7 +45,7 @@ A full-stack web application designed for users to explore, view and post review
 - **Responsive Design**: Fully optimized for mobile devices with responsive cards, dropdowns and custom pagination.
 - **Public API Integration**: Fetches real restaurant data and locations dynamically.
 
-## Preview
+## <a id="preview"></a>📸 Preview
 
 Here are some screenshots of the main user flow:
 
@@ -53,14 +55,14 @@ Here are some screenshots of the main user flow:
 | **Reading a Review** | **Posting a Review** |
 | <img src="/public/images/reviewCard.png" width="400" alt="Review Card Desktop"> | <img src="/public/images/review.png" width="400" alt="Review Desktop"> |
 
-## Requirements
+## <a id="requirements"></a>📋 Requirements
 
 - **Node.js**: v14.x or higher
 - **npm**: v6.x or higher (Node Package Manager)
 - **Web Browser**: Chrome, Firefox, Safari or Edge
 - **Internet Connection**: Required for fetching public API data and Bootstrap CDNs.
 
-## Installation
+## <a id="installation"></a>🚀 Installation
 
 ### 1. Clone the Repository
 
@@ -104,7 +106,7 @@ Open your web browser and navigate to:
 http://localhost:3000
 ```
 
-## Data Sources
+## <a id="data-sources"></a>🗄️ Data Sources
 
 This project utilizes a hybrid data approach:
 
@@ -116,14 +118,14 @@ This project utilizes a hybrid data approach:
 - **What it provides**: Persistence for user-generated content (username, rating, price range, date and review text).
 - **Usage**: Simulates a database environment for the frontend, allowing dynamic calculation of average ratings and rendering of community feedback.
 
-## Basic Usage
+## <a id="basic-usage"></a>💡 Basic Usage
 
 1. **Home Page**: Select a **Neighborhood** (e.g., Saúde, Liberdade, Pinheiros) and a **Cuisine** (e.g., Japanese, Italian, Brazilian Barbecue) from the dropdown menus.
 2. **Search Results**: Browse the generated list of restaurants. Use the top-right dropdown to sort the results.
 3. **View Reviews**: Click "See the reviews" on any restaurant card to read what the community is saying.
 4. **Post a Review**: Fill out the elegant form providing your username, the restaurant name, neighborhood, cuisine, rating, date visited and your review text. Submit to see it instantly added to the platform.
 
-## Project Structure
+## <a id="project-structure"></a>📁 Project Structure
 
 ```text
 public/                 # Static assets
@@ -149,7 +151,7 @@ package-lock.json       # Dependency version lock
 README.md               # This file
 ```
 
-## Technical Details
+## <a id="technical-details"></a>⚙️ Technical Details
 
 ### Responsive Flexbox Layouts
 The UI relies heavily on Bootstrap 5 utility classes combined with custom CSS Media Queries. Elements like the rating boxes, sorting dropdowns and tags (`d-block d-md-inline`) dynamically stack on mobile devices (`max-width: 767px`) to prevent horizontal overflow and overlapping.
@@ -163,7 +165,7 @@ To cross-reference API data with user reviews, the system normalizes strings by 
 const rawName = restTexts[i].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 ```
 
-## Project Limitations
+## <a id="project-limitations"></a>⚠️ Project Limitations
 
 As this is a learning project, there are a few technical limitations to be aware of:
 
@@ -176,7 +178,7 @@ All restaurant data is fetched dynamically from a free public [API](https://apid
 - Incorrect address locations.
 - Misspelled or incorrectly formatted restaurant names.
 
-## Future Improvements
+## <a id="future-improvements"></a>🗺️ Future Improvements
 
 As I continue to learn and evolve this project, the following features are planned for future updates:
 
@@ -186,11 +188,15 @@ Replace the current `localStorage` mock system with a robust backend database (s
 ### 2. Michelin Star Recognition API
 Integrate an advanced API capable of identifying if a restaurant has been awarded Michelin stars. Highlighting these prestigious establishments with special UI badges will instantly attract users' attention and provide a premium layer of information to the platform.
 
-## License
+## <a id="license"></a>📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Contact Me
+## <a id="credits"></a>💭 Credits
+
+I would like to thank [Angela Yu](https://github.com/angelabauer) for providing this great exercise from her [course](https://www.udemy.com/course/the-complete-web-development-bootcamp/?couponCode=LOCLZDOFFPBRCTRL). 
+
+## <a id="contact-me"></a>📬 Contact Me
 
 <div align="center">
   
