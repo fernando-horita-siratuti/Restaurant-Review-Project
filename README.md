@@ -22,6 +22,7 @@ A full-stack web application designed for users to explore, view and post review
 ## 📑 Table of Contents
 - [🎯 Features](#features)
 - [📸 Preview](#preview)
+- [🌐 Live Demo](#live-demo)
 - [📋 Requirements](#requirements)
 - [🚀 Installation](#installation)
 - [🗄️ Data Sources](#data-sources)
@@ -54,6 +55,14 @@ Here are some screenshots of the main user flow:
 | <img src="/public/images/home.png" width="400" alt="Home Desktop"> | <img src="/public/images/restaurantCards.png" width="400" alt="Rstaurant Cards Desktop"> |
 | **Reading a Review** | **Posting a Review** |
 | <img src="/public/images/reviewCard.png" width="400" alt="Review Card Desktop"> | <img src="/public/images/review.png" width="400" alt="Review Desktop"> |
+
+## <a id="live-demo"></a>🌐 Live Demo
+
+The application is successfully deployed and hosted online! You can test all the features directly in your browser without needing to run it locally.
+
+👉 **[Click here to access Dine SP](https://dine-sp.onrender.com/)**
+
+*(Note: The platform is currently hosted on a free Render instance. If the site hasn't been visited in a while, the server may go to sleep. It might take around 40-50 seconds to load initially as the server wakes up).*
 
 ## <a id="requirements"></a>📋 Requirements
 
