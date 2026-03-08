@@ -2,10 +2,21 @@ import 'dotenv/config';
 import express from "express";
 import axios from "axios";
 import bodyParser from "body-parser";
+import pg from "pg";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.static("public"));
+
+const db = new pg.Client({
+  user: process.env.PG_USER,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DATABASE,
+  password: process.env.PG_PASSWORD,
+  port: process.env.PG_PORT 
+});
+
+db.connect();
 
 const apiKey = process.env.GEOAPIFY_API_KEY;
 
