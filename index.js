@@ -201,9 +201,7 @@ app.get("/view", async (req, res) => {
             
             viewContentHtml =   `
                                     <div class="container mt-4">
-                                        
                                         <div class="row align-items-center mb-4">
-                                            
                                             <div class="col-2 col-md-3 text-start">
                                                 <a href="${backLink}" class="btn fw-bold shadow-sm px-2 py-1" 
                                                 style="background-color: #382f2f; color: white; border-radius: 8px; font-size: 0.9rem;">
@@ -217,13 +215,9 @@ app.get("/view", async (req, res) => {
                                                     Community Reviews for "${cleanSelectedRestaurant}" 👨‍🍳
                                                 </h1>
                                             </div>
-                                            
                                             <div class="col-2 col-md-3"></div>
-                                            
                                         </div>
-                                        
                                         <div id="postsContainer" class="mt-4"></div>
-
                                     </div>
                                 `;
         } else if (neighborhood && cuisine) {
@@ -637,7 +631,6 @@ app.get("/review", (req, res) => {
                             </div>
 
                             <div class="row g-3 mb-4">
-                                
                                 <div class="col-md-3 text-start">
                                     <label class="form-label review-label fw-bold">Neighborhood</label>
                                     <div class="dropdown w-100">
@@ -746,7 +739,6 @@ app.get("/review", (req, res) => {
                             <div class="text-center">
                                 <button type="submit" class="btn btn-primary px-5 py-2 fs-4 fw-bold shadow-sm" style="border-radius: 8px;">Post</button>
                             </div>
-
                             </form>
                         </div>
 
@@ -791,7 +783,7 @@ app.get("/login", (req, res) => {
                                                 <label for="passwordInput" style="color: #6a6053;">Password</label>
                                             </div>
 
-                                            <button type="submit" class="btn w-100 fw-bold fs-5 rounded-pill mb-3" style="background-color: #433c33; color: #d8cbb8; padding: 10px 0;">
+                                            <button type="submit" class="btn w-100 fw-bold fs-5 rounded-pill mb-3" style="background-color: #433c33; color: #ffffff; padding: 10px 0;">
                                                 Login
                                             </button>
                                         </form>
@@ -807,6 +799,38 @@ app.get("/login", (req, res) => {
                     </div>
                    `
     });
+});
+
+app.post("/login", async (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    try {
+        const result = await db.query("SELECT * FROM users WHERE email = $1", 
+            [email]
+        );
+
+        if (result.rows.length > 0) {
+            const user = result.rows[0];
+            const storedPassword = user.password;
+
+            bcrypt.compare(password, storedPassword, (err, result) => {
+                if (err) {
+                    console.log("Error comparing passwords: ", err);
+                } else {
+                    if (result) {
+                        res.render("secrets.ejs");
+                    } else {
+                        res.send("Incorrect password");
+                    }
+                }
+            }); 
+        } else {
+            res.send("User not found");
+        }
+    } catch (err) {
+        console.log(err);
+    }
 });
 
 app.get("/register", (req, res) => {
@@ -832,7 +856,7 @@ app.get("/register", (req, res) => {
                                                     <label for="passwordRegister" style="color: #6a6053;">Password</label>
                                                 </div>
 
-                                                <button type="submit" class="btn w-100 fw-bold fs-5 rounded-pill mb-3" style="background-color: #433c33; color: #d8cbb8; padding: 10px 0;">
+                                                <button type="submit" class="btn w-100 fw-bold fs-5 rounded-pill mb-3" style="background-color: #433c33; color: #ffffff; padding: 10px 0;">
                                                     Sign Up
                                                 </button>
                                             </form>
@@ -848,6 +872,37 @@ app.get("/register", (req, res) => {
                         </div>
                     `
     });
+});
+
+app.post("/register", async (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+    const saltRounds = 10;
+
+    try {
+        const checkResult = await db.query("SELECT * FROM users WHERE email = $1", 
+            [email]
+        );
+
+        if (checkResult.rows.length > 0) {
+            res.send("Email already exists. Try logging in.");
+        } else {
+            bcrypt.hash(password, saltRounds, async (err, hash) => {
+                if (err) {
+                    console.log("Error hashing password: ", err);
+                } else {
+                    const result = await db.query(
+                        "INSERT INTO users (email, password) VALUES ($1, $2)",
+                        [email, hash]
+                    );
+                    console.log(result);
+                    res.render("secrets.ejs");
+                }
+            });
+        }
+    } catch (err) {
+        console.log(err);
+    }
 });
 
 async function getNeighborhoodId(neighborhood, cidade = "São Paulo") {
