@@ -38,21 +38,18 @@
             </li>
           </ul>
 
-          <div class="d-flex align-items-center justify-content-center justify-content-lg-end ms-lg-auto mt-4 me-3 mt-lg-0 gap-4 gap-lg-0">
-            
-            <a href="/login" class="text-decoration-none d-flex align-items-center auth-link" style="color: #d8cbb8;">
+          <div class="d-flex align-items-center ms-auto justify-content-end mt-3 me-4 mt-lg-0">
+            <a href="/login" class="text-decoration-none d-flex align-items-center auth-link" style="color: <%= activePage === 'login' ? '#ffffff' : '#d8cbb8' %>;">
               <i class="bi bi-person-circle fs-4 me-2"></i>
               <span class="fw-medium" style="font-size: 1.05rem;">Login</span>
             </a>
 
             <span class="mx-3 opacity-75 d-none d-lg-inline" style="color: #d8cbb8;">|</span>
 
-            <a href="/register" class="btn rounded-pill px-4 py-1 auth-btn fw-medium" style="border: 1px solid #d8cbb8; color: #d8cbb8; font-size: 1.05rem;">
+            <a href="/register" class="btn rounded-pill px-4 py-1 auth-btn fw-medium" style="border: 1px solid <%= activePage === 'register' ? '#ffffff' : '#d8cbb8' %>; color: <%= activePage === 'register' ? '#ffffff' : '#d8cbb8' %>; font-size: 1.05rem;">
               Register
             </a>
-            
           </div>
-
         </div>
       </div>
     </nav>

@@ -3,6 +3,7 @@ import express from "express";
 import axios from "axios";
 import bodyParser from "body-parser";
 import pg from "pg";
+import bcrypt from "bcrypt"
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,8 +16,12 @@ const db = new pg.Pool({
     }
 });
 
+db.on('error', (err) => {
+    console.error('Unexcpected conextion error with the database:', err.message);
+});
+
 db.connect()
-    .then(() => console.log("Successfully connected to the cloud database!"))
+    .then(() => console.log("Successfully connected to the cloud database."))
     .catch(err => console.error("Error connecting to the database:", err.stack));
 
 const apiKey = process.env.GEOAPIFY_API_KEY;
@@ -764,7 +769,7 @@ app.get("/login", (req, res) => {
     res.render("index.ejs", { 
         activePage: "login",
         loginPage: `
-                    <div class="container pt-5">
+                    <div class="container mt-4">
                         <div class="row justify-content-center">
                             <div class="col-12 col-md-8 col-lg-5">
                                 <div class="card shadow-lg border-0" style="background-color: #f4efeb; border-radius: 20px;">
@@ -819,14 +824,14 @@ app.post("/login", async (req, res) => {
                     console.log("Error comparing passwords: ", err);
                 } else {
                     if (result) {
-                        res.render("secrets.ejs");
+                        res.send("<script>alert('You are now logged in!'); window.location.href = '/';</script>");
                     } else {
-                        res.send("Incorrect password");
+                        res.send("<script>alert('Incorret email/password. Please try again.'); window.location.href = '/login';</script>");
                     }
                 }
             }); 
         } else {
-            res.send("User not found");
+            res.send("<script>alert('Incorret email/password. Please try again.'); window.location.href = '/login';</script>");
         }
     } catch (err) {
         console.log(err);
@@ -837,7 +842,7 @@ app.get("/register", (req, res) => {
     res.render("index.ejs", { 
         activePage: "register",
         signUpPage: `
-                        <div class="container pt-5">
+                        <div class="container mt-4">
                             <div class="row justify-content-center">
                                 <div class="col-12 col-md-8 col-lg-5">
                                     <div class="card shadow-lg border-0" style="background-color: #f4efeb; border-radius: 20px;">
@@ -846,6 +851,11 @@ app.get("/register", (req, res) => {
                                             <p class="mb-4" style="color: #6a6053;">Join us and start reviewing your favorite spots.</p>
 
                                             <form action="/register" method="POST">
+                                                <div class="form-floating mb-3 text-start">
+                                                    <input type="text" class="form-control" id="usernameRegister" name="username" placeholder="Username" required style="border-radius: 10px; border: 1px solid #d8cbb8;" maxlength="20">
+                                                    <label for="usernameRegister" style="color: #6a6053;">Username (max 20 characters)</label>
+                                                </div>
+
                                                 <div class="form-floating mb-3 text-start">
                                                     <input type="email" class="form-control" id="emailRegister" name="email" placeholder="name@example.com" required style="border-radius: 10px; border: 1px solid #d8cbb8;">
                                                     <label for="emailRegister" style="color: #6a6053;">Email address</label>
@@ -875,6 +885,7 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", async (req, res) => {
+    const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
     const saltRounds = 10;
@@ -885,18 +896,18 @@ app.post("/register", async (req, res) => {
         );
 
         if (checkResult.rows.length > 0) {
-            res.send("Email already exists. Try logging in.");
+            res.send("<script>alert('Email already exists. Try logging in.'); window.location.href = '/login';</script>");
         } else {
             bcrypt.hash(password, saltRounds, async (err, hash) => {
                 if (err) {
                     console.log("Error hashing password: ", err);
                 } else {
                     const result = await db.query(
-                        "INSERT INTO users (email, password) VALUES ($1, $2)",
-                        [email, hash]
+                        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
+                        [username, email, hash]
                     );
-                    console.log(result);
-                    res.render("secrets.ejs");
+
+                    res.redirect("/");
                 }
             });
         }
