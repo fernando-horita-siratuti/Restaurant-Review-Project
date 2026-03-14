@@ -1198,6 +1198,8 @@ app.get("/profile", async (req, res) => {
         orderClause = "ORDER BY LENGTH(price) ASC, date DESC"; 
     } else if (sortOrder === 'price_desc') {
         orderClause = "ORDER BY LENGTH(price) DESC, date DESC"; 
+    } else if (sortOrder === 'alpha_asc') {
+        orderClause = "ORDER BY restaurant_name ASC, date DESC"; 
     }
 
     try {
@@ -1228,9 +1230,10 @@ app.get("/profile", async (req, res) => {
                                 </div>
                                 <div id="profileSortOptions" class="custom-dropdown-options shadow-lg w-100 mt-2" style="position: absolute; top: 100%; right: 0; z-index: 1060; border-radius: 8px; overflow: hidden; background-color: white;">
                                     <div class="custom-dropdown-item profile-sort-item text-center py-2" data-value="newest" style="cursor: pointer;">Newest First</div>
+                                    <div class="custom-dropdown-item profile-sort-item text-center py-2" data-value="price_desc" style="cursor: pointer;">Highest Price</div>
                                     <div class="custom-dropdown-item profile-sort-item text-center py-2" data-value="rating_desc" style="cursor: pointer;">Highest Rated</div>
                                     <div class="custom-dropdown-item profile-sort-item text-center py-2" data-value="price_asc" style="cursor: pointer;">Lowest Price</div>
-                                    <div class="custom-dropdown-item profile-sort-item text-center py-2" data-value="price_desc" style="cursor: pointer;">Highest Price</div>
+                                    <div class="custom-dropdown-item profile-sort-item text-center py-2" data-value="alpha_asc" style="cursor: pointer;">Restaurant (A-Z)</div>
                                 </div>
                             </div>
                         `;
@@ -1303,7 +1306,8 @@ app.get("/profile", async (req, res) => {
                                             'newest': 'Newest First',
                                             'rating_desc': 'Highest Rated',
                                             'price_asc': 'Lowest Price',
-                                            'price_desc': 'Highest Price'
+                                            'price_desc': 'Highest Price',
+                                            'alpha_asc': 'Restaurant (A-Z)'
                                         };
 
                                         if (sortDisplay && sortOptions) {
