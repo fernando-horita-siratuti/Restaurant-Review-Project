@@ -918,7 +918,17 @@ app.post("/review", async (req, res) => {
 
     const userId = req.session.user.id;
     const username = req.session.user.username;
-    const { restaurantName, neighborhood, cuisine, priceRange, rating, dateVisited, reviewText } = req.body;
+    let { restaurantName, neighborhood, cuisine, priceRange, rating, dateVisited, reviewText } = req.body;
+
+    if (restaurantName) {
+        restaurantName = restaurantName
+            .split(' ')
+            .map(word => {
+                if (word.length === 0) return word; 
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            })
+            .join(' ');
+    }
 
     try {
         await db.query(
@@ -938,41 +948,68 @@ app.get("/login", (req, res) => {
     res.render("index.ejs", { 
         activePage: "login",
         user: req.session.user,
-        loginPage: `
-                    <div class="container mt-4">
-                        <div class="row justify-content-center">
-                            <div class="col-12 col-md-8 col-lg-5">
-                                <div class="card shadow-lg border-0" style="background-color: #f4efeb; border-radius: 20px;">
-                                    <div class="card-body p-5 text-center">
-                                        <h2 class="fw-bold mb-4" style="color: #433c33;">Welcome Back</h2>
-                                        <p class="mb-4" style="color: #6a6053;">Please log in to your account.</p>
+        loginPage:  `
+                        <div class="container mt-4">
+                            <div class="row justify-content-center">
+                                <div class="col-12 col-md-8 col-lg-5">
+                                    <div class="card shadow-lg border-0" style="background-color: #f4efeb; border-radius: 20px;">
+                                        <div class="card-body p-5 text-center">
+                                            <h2 class="fw-bold mb-4" style="color: #433c33;">Welcome Back</h2>
+                                            <p class="mb-4" style="color: #6a6053;">Please log in to your account.</p>
 
-                                        <form action="/login" method="POST">
-                                            <div class="form-floating mb-3 text-start">
-                                                <input type="email" class="form-control" id="emailInput" name="email" placeholder="name@example.com" required style="border-radius: 10px; border: 1px solid #d8cbb8;">
-                                                <label for="emailInput" style="color: #6a6053;">Email address</label>
-                                            </div>
-                                            
-                                            <div class="form-floating mb-4 text-start">
-                                                <input type="password" class="form-control" id="passwordInput" name="password" placeholder="Password" required style="border-radius: 10px; border: 1px solid #d8cbb8;">
-                                                <label for="passwordInput" style="color: #6a6053;">Password</label>
-                                            </div>
+                                            <form action="/login" method="POST">
+                                                <div class="form-floating mb-3 text-start">
+                                                    <input type="email" class="form-control" id="emailInput" name="email" placeholder="name@example.com" required style="border-radius: 10px; border: 1px solid #d8cbb8; transition: border-color 0.3s;" oninput="resetLoginBorders()">
+                                                    <label for="emailInput" style="color: #6a6053;">Email address</label>
+                                                </div>
+                                                
+                                                <div class="form-floating mb-4 text-start">
+                                                    <input type="password" class="form-control" id="passwordInput" name="password" placeholder="Password" required style="border-radius: 10px; border: 1px solid #d8cbb8; transition: border-color 0.3s;" oninput="resetLoginBorders()">
+                                                    <label for="passwordInput" style="color: #6a6053;">Password</label>
+                                                </div>
 
-                                            <button type="submit" class="btn w-100 fw-bold fs-5 rounded-pill mb-3" style="background-color: #433c33; color: #ffffff; padding: 10px 0;">
-                                                Login
-                                            </button>
-                                        </form>
+                                                <button type="submit" class="btn w-100 fw-bold fs-5 rounded-pill mb-3" style="background-color: #433c33; color: #ffffff; padding: 10px 0;">
+                                                    Login
+                                                </button>
+                                            </form>
 
-                                        <p class="mt-3 mb-0" style="color: #433c33;">
-                                            Don't have an account? 
-                                            <a href="/register" class="text-decoration-none fw-bold" style="color: #8c7a6b;">Register</a>
-                                        </p>
+                                            <p class="mt-3 mb-0" style="color: #433c33;">
+                                                Don't have an account? 
+                                                <a href="/register" class="text-decoration-none fw-bold" style="color: #8c7a6b;">Register</a>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                   `
+
+                        <script>
+                            document.addEventListener("DOMContentLoaded", () => {
+                                const urlParams = new URLSearchParams(window.location.search);
+                                const emailInput = document.getElementById('emailInput');
+                                const passInput = document.getElementById('passwordInput');
+
+                                if (urlParams.get('error') === 'true' && emailInput && passInput) {
+                                    emailInput.style.border = '2px solid #dc3545';
+                                    passInput.style.border = '2px solid #dc3545';
+                                    
+                                    if (urlParams.get('email')) {
+                                        emailInput.value = urlParams.get('email');
+                                    }
+                                }
+                            });
+
+                            function resetLoginBorders() {
+                                const emailInput = document.getElementById('emailInput');
+                                const passInput = document.getElementById('passwordInput');
+                                
+                                if(emailInput && passInput) {
+                                    emailInput.style.border = '1px solid #d8cbb8';
+                                    passInput.style.border = '1px solid #d8cbb8';
+                                }
+                            }
+                        </script>
+                    `
     });
 });
 
@@ -1027,7 +1064,7 @@ app.get("/register", (req, res) => {
                                             <h2 class="fw-bold mb-4" style="color: #433c33;">Create Account</h2>
                                             <p class="mb-4" style="color: #6a6053;">Join us and start reviewing your favorite spots.</p>
 
-                                            <form action="/register" method="POST">
+                                            <form action="/register" method="POST" onsubmit="return validatePasswords(event)">
                                                 <div class="form-floating mb-3 text-start">
                                                     <input type="text" class="form-control" id="usernameRegister" name="username" placeholder="Username" required style="border-radius: 10px; border: 1px solid #d8cbb8;" maxlength="20">
                                                     <label for="usernameRegister" style="color: #6a6053;">Username (max 20 characters)</label>
@@ -1038,15 +1075,55 @@ app.get("/register", (req, res) => {
                                                     <label for="emailRegister" style="color: #6a6053;">Email address</label>
                                                 </div>
                                                 
-                                                <div class="form-floating mb-4 text-start">
-                                                    <input type="password" class="form-control" id="passwordRegister" name="password" placeholder="Password" required style="border-radius: 10px; border: 1px solid #d8cbb8;">
+                                                <div class="form-floating mb-1 text-start">
+                                                    <input type="password" class="form-control" id="passwordRegister" name="password" placeholder="Password" 
+                                                    pattern="(?=.*[A-Z])(?=.*[!@#$&*]).{6,}" 
+                                                    title="Password must be at least 6 characters long, contain at least one uppercase letter and one special character (!@#$&*)."
+                                                    required style="border-radius: 10px; border: 1px solid #d8cbb8; transition: border-color 0.3s;" oninput="resetPasswordBorders()">
                                                     <label for="passwordRegister" style="color: #6a6053;">Password</label>
+                                                </div>
+                                                <div class="text-start mb-3 ms-2">
+                                                    <small style="color: #8c7a6b; font-size: 0.8rem;">
+                                                        <i class="bi bi-info-circle me-1"></i>Min. 6 characters, 1 uppercase letter and 1 special character.
+                                                    </small>
+                                                </div>
+
+                                                <div class="form-floating mb-4 text-start">
+                                                    <input type="password" class="form-control" id="passwordConfirmationRegister" name="passwordConfirmation" placeholder="Confirm Password" 
+                                                    required style="border-radius: 10px; border: 1px solid #d8cbb8; transition: border-color 0.3s;" oninput="resetPasswordBorders()">
+                                                    <label for="passwordConfirmationRegister" style="color: #6a6053;">Confirm Password</label>
                                                 </div>
 
                                                 <button type="submit" class="btn w-100 fw-bold fs-5 rounded-pill mb-3" style="background-color: #433c33; color: #ffffff; padding: 10px 0;">
                                                     Sign Up
                                                 </button>
                                             </form>
+
+                                            <script>
+                                                function validatePasswords(event) {
+                                                    const passInput = document.getElementById('passwordRegister');
+                                                    const confirmInput = document.getElementById('passwordConfirmationRegister');
+
+                                                    if (passInput.value !== confirmInput.value) {
+                                                        event.preventDefault(); 
+                                                        passInput.style.border = '2px solid #dc3545';
+                                                        confirmInput.style.border = '2px solid #dc3545';
+                                                        alert("Passwords do not match. Please try again.");
+
+                                                        return false;
+                                                    }
+
+                                                    return true; 
+                                                }
+
+                                                function resetPasswordBorders() {
+                                                    const passInput = document.getElementById('passwordRegister');
+                                                    const confirmInput = document.getElementById('passwordConfirmationRegister');
+                                                    
+                                                    passInput.style.border = '1px solid #d8cbb8';
+                                                    confirmInput.style.border = '1px solid #d8cbb8';
+                                                }
+                                            </script>
 
                                             <p class="mt-3 mb-0" style="color: #433c33;">
                                                 Already have an account? 
