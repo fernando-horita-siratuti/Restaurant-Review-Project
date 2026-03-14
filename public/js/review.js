@@ -114,8 +114,22 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.querySelectorAll('#reviewScreen .dropdown-item').forEach(item => {
-    item.addEventListener('click', function() {
-      const dropdownBtn = this.closest('.dropdown').querySelector('.dropdown-toggle');
+    item.addEventListener('click', function(e) {
+      e.preventDefault(); // Evita que a página pule para o topo
+      
+      // 1. Pega o valor e o texto da opção clicada
+      const value = this.getAttribute('data-value');
+      const text = this.innerText;
+      const dropdown = this.closest('.dropdown');
+      
+      // 2. Muda o texto do botão para o que o usuário escolheu
+      dropdown.querySelector('.dropdown-text').innerText = text;
+      
+      // 3. Salva o valor no input "hidden" (é isso que vai para o Node.js/Validação!)
+      dropdown.querySelector('input[type="hidden"]').value = value;
+      
+      // 4. Remove a borda vermelha de erro (se tiver)
+      const dropdownBtn = dropdown.querySelector('.dropdown-toggle');
       dropdownBtn.classList.remove('border', 'border-danger', 'border-2');
     });
   });

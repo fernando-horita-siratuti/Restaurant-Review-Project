@@ -36,7 +36,7 @@
             </li>
           </ul>
 
-          <div class="d-flex align-items-center ms-auto justify-content-end mt-3 me-2 mt-lg-0">
+          <div class="d-flex align-items-center ms-auto justify-content-end mt-3 me-3 mt-lg-0">
           <% if (locals.user) { %>
             <div class="dropdown d-flex justify-content-center w-100 w-lg-auto ms-lg-auto mt-4 mt-lg-0 mb-3 mb-lg-0">
               <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="color: #d8cbb8;">
@@ -46,21 +46,20 @@
               
               <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userDropdown" style="background-color: #f4efeb; border-radius: 12px;">
                   <li class="px-3 py-2 text-center">
-                      <span class="fw-bold d-block" style="color: #433c33; font-size: 1.1rem;"><%= user.username %></span>
-                      <span class="text-muted" style="font-size: 0.9rem;">#<%= user.id %></span>
+                      <span class="fw-bold d-block" style="color: #433c33; font-size: 1.1rem;"><%= user.username %> #<%= user.id %></span>
                   </li>
                   
                   <li><hr class="dropdown-divider" style="border-color: #d8cbb8; opacity: 0.5;"></li>
                   
                   <li>
                       <a class="dropdown-item d-flex align-items-center py-2" href="/profile" style="color: #433c33; font-weight: 500;">
-                          <i class="bi bi-card-list me-3 fs-5"></i> Meus Reviews
+                          <i class="bi bi-card-list me-3 fs-5"></i> My Reviews
                       </a>
                   </li>
                   
                   <li>
                       <a class="dropdown-item d-flex align-items-center py-2 text-danger fw-bold" href="/logout">
-                          <i class="bi bi-box-arrow-right me-3 fs-5"></i> Sair
+                          <i class="bi bi-box-arrow-right me-3 fs-5"></i> Logout
                       </a>
                   </li>
               </ul>

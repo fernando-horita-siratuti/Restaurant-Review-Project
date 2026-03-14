@@ -789,7 +789,7 @@ app.post("/review", async (req, res) => {
             [userId, restaurantName, neighborhood, cuisine, priceRange, rating, dateVisited, username, reviewText]
         );
 
-        res.send("<script>alert('Your review was successfully posted!');</script>");
+        res.send("<script>alert('Your review was successfully posted!'); window.location.href = '/review';</script>");
     } catch (err) {
         console.error("Error storing the review:", err);
         res.send("<script>alert('An error occurred while posting your review.'); window.history.back();</script>");
