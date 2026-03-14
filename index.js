@@ -194,14 +194,13 @@ app.get("/", (req, res) => {
 app.get("/view", async (req, res) => {
     const neighborhood = req.query.neighborhood;
     const cuisine = req.query.cuisine;
-    const selectedRestaurant = req.query.restaurantName;
+    const selectedRestaurant = req.query.restaurantName ? req.query.restaurantName.trim() : undefined;
     const page = parseInt(req.query.page) || 1;
     const itemsPerPage = 10;
 
     let viewContentHtml =   `
                                 <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
-                                    <h1 class="text-center fw-bold" 
-                                        style="color: #382f2f">
+                                    <h1 class="text-center fw-bold" style="color: #382f2f">
                                         Please, select a neighborhood and a cuisine on the home page.
                                     </h1>
                                 </div>
@@ -210,30 +209,98 @@ app.get("/view", async (req, res) => {
     try {
         if (selectedRestaurant) {
             const backLink = `/view?neighborhood=${encodeURIComponent(neighborhood)}&cuisine=${encodeURIComponent(cuisine)}&page=${page}`;
-            const cleanSelectedRestaurant = selectedRestaurant.replace(/[^a-zA-Z0-9]/g, '');
-            
+            const reviewsResult = await db.query(   
+                `
+                    SELECT r.*, u.username 
+                    FROM reviews r 
+                    LEFT JOIN users u ON r.user_id = u.id 
+                    WHERE LOWER(REPLACE(r.restaurant_name, ' ', '')) = LOWER(REPLACE($1, ' ', ''))
+                    ORDER BY r.id DESC
+                `,
+                [selectedRestaurant]
+            );
+
+            const reviews = reviewsResult.rows;
+            let reviewsHtml = '';
+            let titleHtml = '';
+
+            if (reviews.length > 0) {
+                titleHtml = `
+                                <h1 id="reviewsTitle" class="fw-bold mb-0 fs-3 fs-md-1" style="color: #382f2f;">
+                                    Community Reviews for "${selectedRestaurant}" 👨‍🍳
+                                </h1>
+                            `;
+
+                reviews.forEach(review => {
+                    const rateVisual = review.rating + (review.rating >= 8 ? '/10 ⭐' : '/10');
+                    const priceVisual = review.price; 
+                    const dataFormatada = new Date(review.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+                    const nomeDoUsuario = review.username || "Deleted User"; 
+
+                    reviewsHtml +=  `
+                                        <div class="card shadow-sm border-0 mb-4 mx-auto" style="border-radius: 16px; background-color: #ffffff; max-width: 800px; width: 100%;">
+                                            <div class="card-body p-3 p-md-4">
+                                                <div class="d-flex justify-content-between align-items-start mb-3 gap-2 gap-md-3">
+                                                    <div class="d-flex align-items-center flex-grow-1" style="min-width: 0;">
+                                                        <div class="rounded-circle d-flex justify-content-center align-items-center me-2 me-md-3 shadow-sm flex-shrink-0" style="width: 50px; height: 50px; background-color: #bbae87; color: white;">
+                                                            <i class="bi bi-person-fill fs-3"></i>
+                                                        </div>
+                                                        <div class="text-start text-truncate">
+                                                            <h4 class="card-title fw-bold mb-0 text-truncate" style="color: #382f2f;">${nomeDoUsuario}</h4>
+                                                        </div>
+                                                    </div>
+                                                    <div class="rounded shadow-sm d-flex flex-column justify-content-center align-items-center flex-shrink-0" style="background-color: #382f2f; color: #f2ebd9; padding: 8px 12px; margin-top: -5px;">
+                                                        <span class="fw-bold fs-4 fs-md-3" style="line-height: 1;">${rateVisual}</span>
+                                                        <span class="fw-bold" style="font-size: 0.6rem; letter-spacing: 1px; margin-top: 4px;">RATING</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3 text-start">
+                                                    <h5 class="fw-bold fs-4 mb-2" style="color: #382f2f;">🍽️ ${review.restaurant_name}</h5>
+                                                    <p class="text-muted mb-0 fw-bold" style="font-size: 1.1rem;">
+                                                        <span class="d-block d-md-inline">📍 ${review.neighborhood} &nbsp; | &nbsp; 👨‍🍳 ${review.cuisine}</span>
+                                                        <span class="d-none d-md-inline"> &nbsp; | &nbsp; </span>
+                                                        <span class="d-block d-md-inline mt-1 mt-md-0">💵 ${priceVisual} &nbsp; | &nbsp; 📅 ${dataFormatada}</span>
+                                                    </p>
+                                                </div>
+
+                                                <div class="p-3 rounded text-start" style="background-color: #f2ebd9; border-left: 5px solid #bbae87;">
+                                                    <p class="card-text mb-0" style="white-space: pre-wrap; color: #55514b; font-size: 1.05rem; font-style: italic;">"${review.review_text}"</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                });
+            } else {
+                reviewsHtml =   `
+                                    <div class="text-center mt-5 fs-3 fw-bold text-muted">
+                                        No community reviews yet for "${selectedRestaurant}" 
+                                    </div>
+                                `;
+            }
+
             viewContentHtml =   `
                                     <div class="container mt-4">
                                         <div class="row align-items-center mb-4">
                                             <div class="col-2 col-md-3 text-start">
-                                                <a href="${backLink}" class="btn fw-bold shadow-sm px-2 py-1" 
-                                                style="background-color: #382f2f; color: white; border-radius: 8px; font-size: 0.9rem;">
+                                                <a href="${backLink}" class="btn fw-bold shadow-sm px-2 py-1" style="background-color: #382f2f; color: white; border-radius: 8px; font-size: 0.9rem;">
                                                     <i class="bi bi-arrow-left"></i> 
                                                     <span class="d-none d-lg-inline ms-1">Back to restaurant list</span>
                                                 </a>
                                             </div>
-                                            
                                             <div class="col-8 col-md-6 text-center">
-                                                <h1 id="reviewsTitle" class="fw-bold mb-0 fs-3 fs-md-1" style="color: #382f2f; display: none;">
-                                                    Community Reviews for "${cleanSelectedRestaurant}" 👨‍🍳
-                                                </h1>
+                                                ${titleHtml}
                                             </div>
                                             <div class="col-2 col-md-3"></div>
                                         </div>
-                                        <div id="postsContainer" class="mt-4"></div>
+                                        <div id="postsContainer" class="mt-4">
+                                            ${reviewsHtml}
+                                        </div>
                                     </div>
                                 `;
         } else if (neighborhood && cuisine) {
+            const statsQuery = await db.query("SELECT restaurant_name, rating, price FROM reviews");
+            const dbStats = statsQuery.rows;
             const categoriesMap = {
                 'Any': 'catering.restaurant',
                 'African': 'catering.restaurant.african',
@@ -290,36 +357,19 @@ app.get("/view", async (req, res) => {
                                             const neighborhood = "${encodedNeighborhood}";
                                             const cuisine = "${encodedCuisine}";
                                             const currentSort = "${currentSort}";
-                                            const restTexts = JSON.parse(localStorage.getItem('restaurantTexts') || '[]');
-                                            const ratings = JSON.parse(localStorage.getItem('ratings') || '[]');
-                                            const prices = JSON.parse(localStorage.getItem('prices') || '[]');
+                                            const dbReviews = ${JSON.stringify(dbStats)};
                                             const stats = {};
                                             
-                                            const extractRate = (str) => {
-                                                if (!str) {
-                                                    return NaN;
-                                                }
-                                                const match = str.toString().replace(',', '.').match(/\\d+(\\.\\d+)?/);
-                                                return match ? parseFloat(match[0]) : NaN;
-                                            };
-
-                                            const extractPrice = (str) => {
-                                                const text = str.toString().replace(',', '.');
-                                                const dollars = text.match(/\\$/g);
-                                                if (dollars) {
-                                                    return dollars.length;
-                                                }
-                                                return NaN;
-                                            };
-
-                                            for(let i = 0; i < restTexts.length; i++) {
-                                                if(!restTexts[i]) continue;
-                                                const rawName = restTexts[i].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                                            dbReviews.forEach(rev => {
+                                                if(!rev.restaurant_name) return;
+                                                const rawName = rev.restaurant_name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                                                
                                                 if (!stats[rawName]) {
                                                     stats[rawName] = { sumRate: 0, countRate: 0, sumPrice: 0, countPrice: 0 };
                                                 }
-                                                const numRate = extractRate(ratings[i]);
-                                                const numPrice = extractPrice(prices[i]);
+                                                
+                                                const numRate = parseFloat(rev.rating);
+                                                const numPrice = rev.price ? rev.price.length : NaN; 
                                                 
                                                 if (!isNaN(numRate)) { 
                                                     stats[rawName].sumRate += numRate; stats[rawName].countRate++; 
@@ -327,10 +377,10 @@ app.get("/view", async (req, res) => {
                                                 if (!isNaN(numPrice)) { 
                                                     stats[rawName].sumPrice += numPrice; stats[rawName].countPrice++; 
                                                 }
-                                            }
+                                            });
 
                                             allPlaces.forEach(place => {
-                                                place.displayName = "­­­­­ ­" + place.name; // Invisible chars to align the restaurant name with the address
+                                                place.displayName = "­­­­­ ­" + place.name;
                                                 const cleanName = place.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
                                                 const data = stats[cleanName];
                                                 
@@ -353,28 +403,16 @@ app.get("/view", async (req, res) => {
 
                                             allPlaces.sort((a, b) => {
                                                 if (currentSort === 'rating_desc') {
-                                                    if (a.avgRate === -1 && b.avgRate !== -1) {
-                                                        return 1;
-                                                    }
-                                                    if (b.avgRate === -1 && a.avgRate !== -1) {
-                                                        return -1;
-                                                    }
+                                                    if (a.avgRate === -1 && b.avgRate !== -1) return 1;
+                                                    if (b.avgRate === -1 && a.avgRate !== -1) return -1;
                                                     return b.avgRate - a.avgRate;
                                                 } else if (currentSort === 'price_asc') {
-                                                    if (a.avgPrice === -1 && b.avgPrice !== -1) {
-                                                    return 1;
-                                                    }
-                                                    if (b.avgPrice === -1 && a.avgPrice !== -1) {
-                                                        return -1;
-                                                    }
+                                                    if (a.avgPrice === -1 && b.avgPrice !== -1) return 1;
+                                                    if (b.avgPrice === -1 && a.avgPrice !== -1) return -1;
                                                     return a.avgPrice - b.avgPrice;
                                                 } else if (currentSort === 'price_desc') {
-                                                    if (a.avgPrice === -1 && b.avgPrice !== -1) {
-                                                        return 1;
-                                                    }
-                                                    if (b.avgPrice === -1 && a.avgPrice !== -1) {
-                                                        return -1;
-                                                    }
+                                                    if (a.avgPrice === -1 && b.avgPrice !== -1) return 1;
+                                                    if (b.avgPrice === -1 && a.avgPrice !== -1) return -1;
                                                     return b.avgPrice - a.avgPrice;
                                                 } else {
                                                     return a.name.localeCompare(b.name);
@@ -390,29 +428,29 @@ app.get("/view", async (req, res) => {
 
                                             let ulHtml = '<ul class="list-group">';
                                             paginatedPlaces.forEach(place => {
-                                                const encodedRestName = encodeURIComponent(place.displayName);
+                                                const encodedRestName = encodeURIComponent(place.name);
                                                 const address = place.address || "Address not available";
                                                 
-                                                ulHtml +=  \`
-                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                                    <div class="ms-3 text-start">
-                                                                        <span class="fw-bold d-block fs-5">
-                                                                            \${place.displayName}
-                                                                            <span class="restaurant-stats fw-bold ms-2">
-                                                                                <span class="text-muted" style="font-size: 1.1rem;"> | ⭐ \${place.txtRate} | 💵 \${place.txtPrice}</span>
-                                                                            </span>
-                                                                        </span>
-                                                                        <span class="text-muted fw-bold" style="font-size: 0.85rem;">
-                                                                            📍 \${address}
-                                                                        </span>
-                                                                    </div>
-                                                                    <a href="/view?neighborhood=\${neighborhood}&cuisine=\${cuisine}&restaurantName=\${encodedRestName}&page=\${validPage}&sort=\${currentSort}" 
-                                                                    class="text-primary text-decoration-none me-3" 
-                                                                    style="font-size: 0.9rem; white-space: nowrap; margin-left: 15px;">
-                                                                    See the reviews <i class="bi bi-arrow-right"></i>
-                                                                    </a>
-                                                                </li>
-                                                            \`;
+                                                ulHtml += \`
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div class="ms-3 text-start">
+                                                            <span class="fw-bold d-block fs-5">
+                                                                \${place.displayName}
+                                                                <span class="restaurant-stats fw-bold ms-2">
+                                                                    <span class="text-muted" style="font-size: 1.1rem;"> | ⭐ \${place.txtRate} | 💵 \${place.txtPrice}</span>
+                                                                </span>
+                                                            </span>
+                                                            <span class="text-muted fw-bold" style="font-size: 0.85rem;">
+                                                                📍 \${address}
+                                                            </span>
+                                                        </div>
+                                                        <a href="/view?neighborhood=\${neighborhood}&cuisine=\${cuisine}&restaurantName=\${encodedRestName}&page=\${validPage}&sort=\${currentSort}" 
+                                                        class="text-primary text-decoration-none me-3" 
+                                                        style="font-size: 0.9rem; white-space: nowrap; margin-left: 15px;">
+                                                        See the reviews <i class="bi bi-arrow-right"></i>
+                                                        </a>
+                                                    </li>
+                                                \`;
                                             });
                                             ulHtml += '</ul>';
                                             document.getElementById('dynamicListContainer').innerHTML = ulHtml;
@@ -477,7 +515,6 @@ app.get("/view", async (req, res) => {
                                             }
                                         </script>
                                     `;
-
                 } else {
                     listContentHtml = `<p class="text-center mt-4">No places found for ${cuisine} in ${neighborhood}.</p>`;
                 }
@@ -506,7 +543,6 @@ app.get("/view", async (req, res) => {
 
                                     <div class="container mb-4 mt-3 text-center position-relative" style="max-width: 625px;">
                                         <input type="text" id="restaurantSearchBox" class="form-control elegant-input mx-auto shadow-sm" placeholder="Search by restaurant name..." autocomplete="off">
-                                        
                                         <ul id="searchSuggestions" class="dropdown-menu w-100 shadow-lg text-start" style="display: none; position: absolute; top: 100%; left: 0; z-index: 1050; max-height: 250px; overflow-y: auto; border-radius: 12px; border: 1px solid #bbae87;"></ul>
                                     </div>
 
@@ -525,7 +561,6 @@ app.get("/view", async (req, res) => {
                                             if (listContainer) originalListHtml = listContainer.innerHTML;
                                             
                                             if (searchBox && suggestionsBox && typeof allPlaces !== 'undefined') {
-                                                
                                                 searchBox.addEventListener('input', function() {
                                                     const searchTerm = this.value.toLowerCase().trim();
                                                     suggestionsBox.innerHTML = ''; 
@@ -558,34 +593,33 @@ app.get("/view", async (req, res) => {
                                                                 e.preventDefault(); 
                                                                 searchBox.value = match.name; 
                                                                 suggestionsBox.style.display = 'none'; 
-                                                                
                                                                 paginationContainer.style.display = 'none';
 
-                                                                const encodedRestName = encodeURIComponent(match.displayName);
+                                                                const encodedRestName = encodeURIComponent(match.name);
                                                                 const address = match.address || "Address not available";
                                                                 
-                                                                listContainer.innerHTML =  \`
-                                                                                                <ul class="list-group">
-                                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                                                                        <div class="ms-3 text-start">
-                                                                                                            <span class="fw-bold d-block fs-5">
-                                                                                                                \${match.displayName}
-                                                                                                                <span class="restaurant-stats fw-bold ms-2">
-                                                                                                                    <span class="text-muted" style="font-size: 1.1rem;"> | ⭐ \${match.txtRate} | 💵 \${match.txtPrice}</span>
-                                                                                                                </span>
-                                                                                                            </span>
-                                                                                                            <span class="text-muted fw-bold" style="font-size: 0.85rem;">
-                                                                                                                📍 \${address}
-                                                                                                            </span>
-                                                                                                        </div>
-                                                                                                        <a href="/view?neighborhood=\${neighborhood}&cuisine=\${cuisine}&restaurantName=\${encodedRestName}&page=1&sort=\${currentSort}" 
-                                                                                                        class="text-primary text-decoration-none me-3" 
-                                                                                                        style="font-size: 0.9rem; white-space: nowrap; margin-left: 15px;">
-                                                                                                        See the reviews <i class="bi bi-arrow-right"></i>
-                                                                                                        </a>
-                                                                                                    </li>
-                                                                                                </ul>
-                                                                                            \`;
+                                                                listContainer.innerHTML = \`
+                                                                    <ul class="list-group">
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            <div class="ms-3 text-start">
+                                                                                <span class="fw-bold d-block fs-5">
+                                                                                    \${match.displayName}
+                                                                                    <span class="restaurant-stats fw-bold ms-2">
+                                                                                        <span class="text-muted" style="font-size: 1.1rem;"> | ⭐ \${match.txtRate} | 💵 \${match.txtPrice}</span>
+                                                                                    </span>
+                                                                                </span>
+                                                                                <span class="text-muted fw-bold" style="font-size: 0.85rem;">
+                                                                                    📍 \${address}
+                                                                                </span>
+                                                                            </div>
+                                                                            <a href="/view?neighborhood=\${neighborhood}&cuisine=\${cuisine}&restaurantName=\${encodedRestName}&page=1&sort=\${currentSort}" 
+                                                                            class="text-primary text-decoration-none me-3" 
+                                                                            style="font-size: 0.9rem; white-space: nowrap; margin-left: 15px;">
+                                                                            See the reviews <i class="bi bi-arrow-right"></i>
+                                                                            </a>
+                                                                        </li>
+                                                                    </ul>
+                                                                \`;
                                                             });
                                                             
                                                             suggestionListItem.appendChild(dropdownOptionLink);
@@ -615,13 +649,13 @@ app.get("/view", async (req, res) => {
     res.render("index.ejs", {
         activePage: "view",
         user: req.session.user,
-        viewPage: `
+        viewPage:   `
                         <div class="container-fluid" id="viewScreen">
                             <div class="container" id="viewTextContainer">
                                 ${viewContentHtml}
                             </div>
                         </div>
-                     `
+                    `
     });
 });
 
