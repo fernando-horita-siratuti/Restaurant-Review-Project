@@ -208,8 +208,7 @@ app.get("/view", async (req, res) => {
 
     try {
         if (selectedRestaurant) {
-            const backLink = `/view?neighborhood=${encodeURIComponent(neighborhood)}&cuisine=${encodeURIComponent(cuisine)}&page=${page}`;
-            
+            const backLink = `/view?neighborhood=${encodeURIComponent(neighborhood)}&cuisine=${encodeURIComponent(cuisine)}&page=1`;
             const reviewSort = req.query.reviewSort || 'newest';
             let orderClause = "ORDER BY r.date DESC, r.id DESC"; 
             
@@ -219,15 +218,18 @@ app.get("/view", async (req, res) => {
                 orderClause = "ORDER BY CAST(r.rating AS DECIMAL) ASC, r.date DESC"; 
             }
 
+            const reviewsPerPage = 5;
+            const offset = (page - 1) * reviewsPerPage;
             const reviewsResult = await db.query(   
                 `
-                    SELECT r.*, u.username 
+                    SELECT r.*, u.username, COUNT(*) OVER() as full_count 
                     FROM reviews r 
                     LEFT JOIN users u ON r.user_id = u.id 
                     WHERE LOWER(REPLACE(r.restaurant_name, ' ', '')) = LOWER(REPLACE($1, ' ', ''))
                     ${orderClause}
+                    LIMIT $2 OFFSET $3
                 `,
-                [selectedRestaurant]
+                [selectedRestaurant, reviewsPerPage, offset]
             );
 
             const reviews = reviewsResult.rows;
@@ -235,38 +237,37 @@ app.get("/view", async (req, res) => {
             let titleHtml = '';
             let sortHtml = ''; 
             let scriptHtml = ''; 
+            let pageHtml = ''; 
 
             if (reviews.length > 0) {
                 titleHtml = `
-                    <h1 id="reviewsTitle" class="fw-bold mb-0 fs-3 fs-md-1" style="color: #382f2f;">
-                        Community Reviews for "${selectedRestaurant}" 👨‍🍳
-                    </h1>
-                `;
+                                <h1 id="reviewsTitle" class="fw-bold mb-0 fs-3 fs-md-1" style="color: #382f2f;">
+                                    Community Reviews for "${selectedRestaurant}" 👨‍🍳
+                                </h1>
+                            `;
 
                 sortHtml =  `
                                 <div class="sort-wrapper d-flex justify-content-center justify-content-lg-end w-100" style="position: relative;">
                                     <div style="width: 220px; position: relative;"> 
-                                        
                                         <div id="reviewSortDropdown" class="custom-dropdown-display shadow-sm w-100 d-flex justify-content-between align-items-center px-3 py-2" style="background-color: #ffffff; border: 1px solid #d4c598; border-radius: 8px; cursor: pointer;">
                                             <span id="reviewSortText" class="fw-medium text-dark">Newest First</span>
                                             <i class="bi bi-chevron-down text-dark"></i>
                                         </div>
-                                        
                                         <div id="reviewSortOptions" class="custom-dropdown-options shadow-lg w-100 mt-2" style="position: absolute; top: 100%; left: 0; z-index: 1000; border-radius: 8px;">
                                             <div class="custom-dropdown-item review-sort-item text-center py-2" data-value="newest" style="cursor: pointer;">Newest First</div>
                                             <div class="custom-dropdown-item review-sort-item text-center py-2" data-value="rating_desc" style="cursor: pointer;">Highest Rated</div>
                                             <div class="custom-dropdown-item review-sort-item text-center py-2" data-value="rating_asc" style="cursor: pointer;">Lowest Rated</div>
                                         </div>
-                                        
                                     </div>
                                 </div>
                             `;
 
                 reviews.forEach(review => {
-                    const rateVisual = review.rating + (review.rating >= 8 ? '/10 ⭐' : '/10');
-                    const priceVisual = review.price; 
-                    const dataFormatada = new Date(review.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-                    const nomeDoUsuario = review.username || "Deleted User"; 
+                    const cardRate = review.rating + (review.rating >= 8 ? '/10 ⭐' : '/10');
+                    const cardPrice = review.price; 
+                    const formatedData = new Date(review.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+                    const username = review.username || "Deleted User"; 
+                    const userId = review.user_id;
 
                     reviewsHtml += `
                                         <div class="card shadow-sm border-0 mb-4 mx-auto" style="border-radius: 16px; background-color: #ffffff; max-width: 800px; width: 100%;">
@@ -277,11 +278,11 @@ app.get("/view", async (req, res) => {
                                                             <i class="bi bi-person-fill fs-3"></i>
                                                         </div>
                                                         <div class="text-start text-truncate">
-                                                            <h4 class="card-title fw-bold mb-0 text-truncate" style="color: #382f2f;">${nomeDoUsuario}</h4>
+                                                            <h4 class="card-title fw-bold mb-0 text-truncate" style="color: #382f2f;">${username} #${userId}</h4>
                                                         </div>
                                                     </div>
                                                     <div class="rounded shadow-sm d-flex flex-column justify-content-center align-items-center flex-shrink-0" style="background-color: #382f2f; color: #f2ebd9; padding: 8px 12px; margin-top: -5px;">
-                                                        <span class="fw-bold fs-4 fs-md-3" style="line-height: 1;">${rateVisual}</span>
+                                                        <span class="fw-bold fs-4 fs-md-3" style="line-height: 1;">${cardRate}</span>
                                                         <span class="fw-bold" style="font-size: 0.6rem; letter-spacing: 1px; margin-top: 4px;">RATING</span>
                                                     </div>
                                                 </div>
@@ -291,7 +292,7 @@ app.get("/view", async (req, res) => {
                                                     <p class="text-muted mb-0 fw-bold" style="font-size: 1.1rem;">
                                                         <span class="d-block d-md-inline">📍 ${review.neighborhood} &nbsp; | &nbsp; 👨‍🍳 ${review.cuisine}</span>
                                                         <span class="d-none d-md-inline"> &nbsp; | &nbsp; </span>
-                                                        <span class="d-block d-md-inline mt-1 mt-md-0">💵 ${priceVisual} &nbsp; | &nbsp; 📅 ${dataFormatada}</span>
+                                                        <span class="d-block d-md-inline mt-1 mt-md-0">💵 ${cardPrice} &nbsp; | &nbsp; 📅 ${formatedData}</span>
                                                     </p>
                                                 </div>
 
@@ -302,6 +303,31 @@ app.get("/view", async (req, res) => {
                                         </div>
                                     `;
                 });
+                const totalReviews = parseInt(reviews[0].full_count);
+                const totalPages = Math.ceil(totalReviews / reviewsPerPage);
+
+                if (totalPages > 1) {
+                    pageHtml = '<div class="d-flex justify-content-center align-items-end flex-wrap gap-4 mt-5">';
+                    for (let i = 1; i <= totalPages; i++) {
+                        const isActive = (i === page);
+                        const color = isActive ? '#382f2f' : '#d4c598'; 
+                        const transform = isActive ? 'scale(1.3)' : 'scale(1)';
+                        const opacity = isActive ? '1' : '0.6'; 
+                        
+                        const pageLink = `/view?neighborhood=${encodeURIComponent(neighborhood)}&cuisine=${encodeURIComponent(cuisine)}&restaurantName=${encodeURIComponent(selectedRestaurant)}&page=${i}&reviewSort=${reviewSort}`;
+                        
+                        pageHtml += `
+                                        <a href="${pageLink}" class="text-decoration-none d-flex flex-column align-items-center" 
+                                        style="transition: all 0.3s ease; transform: ${transform}; opacity: ${opacity};">
+                                            <img src="/images/chefHat.png" alt="Page ${i}" width="45" height="45">
+                                            <span class="fw-bold mt-2" style="color: ${color}; font-size: 0.9rem;">
+                                                ${i}
+                                            </span>
+                                        </a>
+                                    `;
+                    }
+                    pageHtml += '</div>';
+                }
 
                 scriptHtml =    `
                                     <script>
@@ -338,7 +364,7 @@ app.get("/view", async (req, res) => {
                                                     item.addEventListener('click', (e) => {
                                                         const newSort = e.target.getAttribute('data-value');
                                                         sortOptions.classList.remove('show');
-                                                        window.location.href = \`/view?neighborhood=${encodeURIComponent(neighborhood)}&cuisine=${encodeURIComponent(cuisine)}&restaurantName=${encodeURIComponent(selectedRestaurant)}&page=${page}&reviewSort=\${newSort}\`;
+                                                        window.location.href = \`/view?neighborhood=${encodeURIComponent(neighborhood)}&cuisine=${encodeURIComponent(cuisine)}&restaurantName=${encodeURIComponent(selectedRestaurant)}&page=1&reviewSort=\${newSort}\`;
                                                     });
                                                 });
                                             }
@@ -352,7 +378,6 @@ app.get("/view", async (req, res) => {
                                     No community reviews yet for "${selectedRestaurant}" 
                                 </div>
                             `;
-                reviewsHtml = ''; 
             }
             viewContentHtml =   `
                                     <div class="container mt-4">
@@ -367,10 +392,12 @@ app.get("/view", async (req, res) => {
                                                 ${titleHtml}
                                             </div>
                                             <div class="col-12 col-lg-3 d-flex justify-content-center justify-content-lg-end">
-                                                ${sortHtml} </div>
+                                                ${sortHtml} 
+                                            </div>
                                         </div>
                                         <div id="postsContainer" class="mt-4">
                                             ${reviewsHtml}
+                                            ${pageHtml}
                                             ${scriptHtml}
                                         </div>
                                     </div>
@@ -457,7 +484,7 @@ app.get("/view", async (req, res) => {
                                             });
 
                                             allPlaces.forEach(place => {
-                                                place.displayName = "­­­­­ ­" + place.name;
+                                                place.displayName = "­­­­­ ­" + place.name; // Invisible chars added to align with the adress text
                                                 const cleanName = place.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
                                                 const data = stats[cleanName];
                                                 
@@ -532,7 +559,7 @@ app.get("/view", async (req, res) => {
                                             ulHtml += '</ul>';
                                             document.getElementById('dynamicListContainer').innerHTML = ulHtml;
 
-                                            let pagHtml = '<div class="d-flex justify-content-center align-items-end flex-wrap gap-4 mt-5">';
+                                            let pageHtml = '<div class="d-flex justify-content-center align-items-end flex-wrap gap-4 mt-5">';
                                             for (let i = 1; i <= totalPages; i++) {
                                                 const isActive = (i === validPage);
                                                 const color = isActive ? '#382f2f' : '#d4c598'; 
@@ -541,7 +568,7 @@ app.get("/view", async (req, res) => {
                                                 
                                                 const pageLink = \`/view?neighborhood=\${neighborhood}&cuisine=\${cuisine}&page=\${i}&sort=\${currentSort}\`;
                                                 
-                                                pagHtml += \`
+                                                pageHtml += \`
                                                     <a href="\${pageLink}" class="text-decoration-none d-flex flex-column align-items-center" 
                                                     style="transition: all 0.3s ease; transform: \${transform}; opacity: \${opacity};">
                                                         <img src="/images/chefHat.png" alt="Page \${i}" width="45" height="45">
@@ -551,8 +578,8 @@ app.get("/view", async (req, res) => {
                                                     </a>
                                                 \`;
                                             }
-                                            pagHtml += '</div>';
-                                            document.getElementById('dynamicPaginationContainer').innerHTML = pagHtml;
+                                            pageHtml += '</div>';
+                                            document.getElementById('dynamicPaginationContainer').innerHTML = pageHtml;
 
                                             const displayBox = document.getElementById('customSortDropdown');
                                             const optionsBox = document.getElementById('customSortOptions');
@@ -1053,11 +1080,18 @@ app.post("/register", async (req, res) => {
                     console.log("Error hashing password: ", err);
                 } else {
                     const result = await db.query(
-                        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
+                        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email",
                         [username, email, hash]
                     );
+                    const novoUsuario = result.rows[0];
 
-                    res.redirect("/");
+                    req.session.user = {
+                        id: novoUsuario.id,
+                        username: novoUsuario.username,
+                        email: novoUsuario.email
+                    };
+
+                    res.send(`<script>alert('Account created successfully! You are now logged in.'); window.location.href = '/';</script>`);
                 }
             });
         }
