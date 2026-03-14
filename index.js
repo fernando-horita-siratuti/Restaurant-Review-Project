@@ -209,13 +209,23 @@ app.get("/view", async (req, res) => {
     try {
         if (selectedRestaurant) {
             const backLink = `/view?neighborhood=${encodeURIComponent(neighborhood)}&cuisine=${encodeURIComponent(cuisine)}&page=${page}`;
+            
+            const reviewSort = req.query.reviewSort || 'newest';
+            let orderClause = "ORDER BY r.date DESC, r.id DESC"; 
+            
+            if (reviewSort === 'rating_desc') {
+                orderClause = "ORDER BY CAST(r.rating AS DECIMAL) DESC, r.date DESC"; 
+            } else if (reviewSort === 'rating_asc') {
+                orderClause = "ORDER BY CAST(r.rating AS DECIMAL) ASC, r.date DESC"; 
+            }
+
             const reviewsResult = await db.query(   
                 `
                     SELECT r.*, u.username 
                     FROM reviews r 
                     LEFT JOIN users u ON r.user_id = u.id 
                     WHERE LOWER(REPLACE(r.restaurant_name, ' ', '')) = LOWER(REPLACE($1, ' ', ''))
-                    ORDER BY r.id DESC
+                    ${orderClause}
                 `,
                 [selectedRestaurant]
             );
@@ -223,12 +233,33 @@ app.get("/view", async (req, res) => {
             const reviews = reviewsResult.rows;
             let reviewsHtml = '';
             let titleHtml = '';
+            let sortHtml = ''; 
+            let scriptHtml = ''; 
 
             if (reviews.length > 0) {
                 titleHtml = `
-                                <h1 id="reviewsTitle" class="fw-bold mb-0 fs-3 fs-md-1" style="color: #382f2f;">
-                                    Community Reviews for "${selectedRestaurant}" 👨‍🍳
-                                </h1>
+                    <h1 id="reviewsTitle" class="fw-bold mb-0 fs-3 fs-md-1" style="color: #382f2f;">
+                        Community Reviews for "${selectedRestaurant}" 👨‍🍳
+                    </h1>
+                `;
+
+                sortHtml =  `
+                                <div class="sort-wrapper d-flex justify-content-center justify-content-lg-end w-100" style="position: relative;">
+                                    <div style="width: 220px; position: relative;"> 
+                                        
+                                        <div id="reviewSortDropdown" class="custom-dropdown-display shadow-sm w-100 d-flex justify-content-between align-items-center px-3 py-2" style="background-color: #ffffff; border: 1px solid #d4c598; border-radius: 8px; cursor: pointer;">
+                                            <span id="reviewSortText" class="fw-medium text-dark">Newest First</span>
+                                            <i class="bi bi-chevron-down text-dark"></i>
+                                        </div>
+                                        
+                                        <div id="reviewSortOptions" class="custom-dropdown-options shadow-lg w-100 mt-2" style="position: absolute; top: 100%; left: 0; z-index: 1000; border-radius: 8px;">
+                                            <div class="custom-dropdown-item review-sort-item text-center py-2" data-value="newest" style="cursor: pointer;">Newest First</div>
+                                            <div class="custom-dropdown-item review-sort-item text-center py-2" data-value="rating_desc" style="cursor: pointer;">Highest Rated</div>
+                                            <div class="custom-dropdown-item review-sort-item text-center py-2" data-value="rating_asc" style="cursor: pointer;">Lowest Rated</div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
                             `;
 
                 reviews.forEach(review => {
@@ -237,7 +268,7 @@ app.get("/view", async (req, res) => {
                     const dataFormatada = new Date(review.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
                     const nomeDoUsuario = review.username || "Deleted User"; 
 
-                    reviewsHtml +=  `
+                    reviewsHtml += `
                                         <div class="card shadow-sm border-0 mb-4 mx-auto" style="border-radius: 16px; background-color: #ffffff; max-width: 800px; width: 100%;">
                                             <div class="card-body p-3 p-md-4">
                                                 <div class="d-flex justify-content-between align-items-start mb-3 gap-2 gap-md-3">
@@ -271,30 +302,76 @@ app.get("/view", async (req, res) => {
                                         </div>
                                     `;
                 });
-            } else {
-                reviewsHtml =   `
-                                    <div class="text-center mt-5 fs-3 fw-bold text-muted">
-                                        No community reviews yet for "${selectedRestaurant}" 
-                                    </div>
-                                `;
-            }
 
+                scriptHtml =    `
+                                    <script>
+                                        document.addEventListener("DOMContentLoaded", function() {
+                                            const sortDisplay = document.getElementById('reviewSortDropdown');
+                                            const sortOptions = document.getElementById('reviewSortOptions');
+                                            const sortText = document.getElementById('reviewSortText');
+                                            const sortItems = document.querySelectorAll('.review-sort-item');
+
+                                            const currentReviewSort = "${reviewSort}";
+                                            const labels = {
+                                                'newest': 'Newest First',
+                                                'rating_desc': 'Highest Rated',
+                                                'rating_asc': 'Lowest Rated'
+                                            };
+
+                                            if (sortDisplay && sortOptions) {
+                                                if (labels[currentReviewSort]) {
+                                                    sortText.innerText = labels[currentReviewSort];
+                                                }
+
+                                                sortDisplay.addEventListener('click', (e) => {
+                                                    e.stopPropagation();
+                                                    sortOptions.classList.toggle('show');
+                                                });
+
+                                                document.addEventListener('click', (e) => {
+                                                    if (!sortDisplay.contains(e.target) && !sortOptions.contains(e.target)) {
+                                                        sortOptions.classList.remove('show');
+                                                    }
+                                                });
+
+                                                sortItems.forEach(item => {
+                                                    item.addEventListener('click', (e) => {
+                                                        const newSort = e.target.getAttribute('data-value');
+                                                        sortOptions.classList.remove('show');
+                                                        window.location.href = \`/view?neighborhood=${encodeURIComponent(neighborhood)}&cuisine=${encodeURIComponent(cuisine)}&restaurantName=${encodeURIComponent(selectedRestaurant)}&page=${page}&reviewSort=\${newSort}\`;
+                                                    });
+                                                });
+                                            }
+                                        });
+                                    </script>
+                                `;
+
+            } else {
+                titleHtml = `
+                                <div class="fs-3 fw-bold text-muted mb-0">
+                                    No community reviews yet for "${selectedRestaurant}" 
+                                </div>
+                            `;
+                reviewsHtml = ''; 
+            }
             viewContentHtml =   `
                                     <div class="container mt-4">
                                         <div class="row align-items-center mb-4">
-                                            <div class="col-2 col-md-3 text-start">
+                                            <div class="col-12 col-lg-3 text-center text-lg-start mb-3 mb-lg-0">
                                                 <a href="${backLink}" class="btn fw-bold shadow-sm px-2 py-1" style="background-color: #382f2f; color: white; border-radius: 8px; font-size: 0.9rem;">
                                                     <i class="bi bi-arrow-left"></i> 
                                                     <span class="d-none d-lg-inline ms-1">Back to restaurant list</span>
                                                 </a>
                                             </div>
-                                            <div class="col-8 col-md-6 text-center">
+                                            <div class="col-12 col-lg-6 text-center mb-3 mb-lg-0">
                                                 ${titleHtml}
                                             </div>
-                                            <div class="col-2 col-md-3"></div>
+                                            <div class="col-12 col-lg-3 d-flex justify-content-center justify-content-lg-end">
+                                                ${sortHtml} </div>
                                         </div>
                                         <div id="postsContainer" class="mt-4">
                                             ${reviewsHtml}
+                                            ${scriptHtml}
                                         </div>
                                     </div>
                                 `;
