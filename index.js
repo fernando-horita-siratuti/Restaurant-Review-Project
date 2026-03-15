@@ -5,10 +5,26 @@ import bodyParser from "body-parser";
 import pg from "pg";
 import bcrypt from "bcrypt"
 import session from "express-session";
+import passport from "passport";
+import { Strategy } from "passport-local";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.static("public"));
+
+app.use(
+  session({
+    secret: "TOPSECRETWORD",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24
+    }
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 const db = new pg.Pool({
     connectionString: process.env.DATABASE_URL,
@@ -87,7 +103,7 @@ app.get("/api/verify-restaurant", async (req, res) => {
 app.get("/", (req, res) => {
     res.render("index.ejs", { 
         activePage: "home",
-        user: req.session.user,
+        user: req.user,
         homePage: `
                         <section class="hero-section">
                             <div class="container">
@@ -752,7 +768,7 @@ app.get("/view", async (req, res) => {
 
     res.render("index.ejs", {
         activePage: "view",
-        user: req.session.user,
+        user: req.user,
         viewPage:   `
                         <div class="container-fluid" id="viewScreen">
                             <div class="container" id="viewTextContainer">
@@ -766,7 +782,7 @@ app.get("/view", async (req, res) => {
 app.get("/review", (req, res) => {
     let reviewPage = "";
 
-    if (req.session.user) {
+    if (req.user) {
         reviewPage =  `
                         <div id="reviewScreen" class="d-flex justify-content-center">
                             <form id="postForm" action="/review" method="POST" class="w-100" style="max-width: 900px;">
@@ -906,18 +922,18 @@ app.get("/review", (req, res) => {
 
     res.render("index.ejs", {
         activePage: "review",
-        user: req.session.user,
+        user: req.user,
         reviewPage: reviewPage
     });
 });
 
 app.post("/review", async (req, res) => {
-    if (!req.session.user) {
+    if (!req.isAuthenticated()) {
         return res.send("<script>alert('You must be logged in to post a review!'); window.location.href = '/login';</script>");
     }
 
-    const userId = req.session.user.id;
-    const username = req.session.user.username;
+    const userId = req.user.id;
+    const username = req.user.username;
     let { restaurantName, neighborhood, cuisine, priceRange, rating, dateVisited, reviewText } = req.body;
 
     if (restaurantName) {
@@ -947,7 +963,7 @@ app.post("/review", async (req, res) => {
 app.get("/login", (req, res) => {
     res.render("index.ejs", { 
         activePage: "login",
-        user: req.session.user,
+        user: req.user,
         loginPage:  `
                         <div class="container mt-4">
                             <div class="row justify-content-center">
@@ -1013,48 +1029,81 @@ app.get("/login", (req, res) => {
     });
 });
 
-app.post("/login", async (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
+app.post("/login", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+        if (err) {
+            return next(err);
+        }
+        
+        if (!user) {
+            return res.send(`
+                <script>
+                    alert('Incorrect email/password. Please try again.'); 
+                    window.location.href = '/login?error=true&email=${encodeURIComponent(req.body.email)}';
+                </script>
+            `);
+        }
 
-    try {
-        const result = await db.query("SELECT * FROM users WHERE email = $1", 
-            [email]
-        );
+        req.logIn(user, (err) => {
+            if (err) {
+                return next(err);
+            }
+            return res.send("<script>alert('You are now logged in!'); window.location.href = '/';</script>");
+        });
+    })(req, res, next);
+});
 
-        if (result.rows.length > 0) {
-            const user = result.rows[0];
-            const storedPassword = user.password;
-
-            bcrypt.compare(password, storedPassword, (err, result) => {
-                if (err) {
-                    console.log("Error comparing passwords: ", err);
-                } else {
-                    if (result) {
-                        req.session.user = {
-                            id: user.id,
-                            username: user.username, 
-                            email: user.email
-                        };
-                        
-                        res.send("<script>alert('You are now logged in!'); window.location.href = '/';</script>");
+passport.use(
+    "local",
+    new Strategy({ usernameField: "email" }, async function verify(email, password, cb) {
+        try {
+            const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+            
+            if (result.rows.length > 0) {
+                const user = result.rows[0];
+                const storedHashedPassword = user.password;
+                
+                bcrypt.compare(password, storedHashedPassword, (err, valid) => {
+                    if (err) {
+                        return cb(err);
                     } else {
-                        res.send("<script>alert('Incorret email/password. Please try again.'); window.location.href = '/login';</script>");
+                        if (valid) {
+                            return cb(null, user); 
+                        } else {
+                            return cb(null, false); 
+                        }
                     }
-                }
-            }); 
+                });
+            } else {
+                return cb(null, false); 
+            }
+        } catch (err) {
+            return cb(err);
+        }
+    })
+);
+
+passport.serializeUser((user, cb) => {
+    cb(null, user.id);
+});
+
+passport.deserializeUser(async (id, cb) => {
+    try {
+        const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);
+        if (result.rows.length > 0) {
+            cb(null, result.rows[0]);
         } else {
-            res.send("<script>alert('Incorret email/password. Please try again.'); window.location.href = '/login';</script>");
+            cb(null, false);
         }
     } catch (err) {
-        console.log(err);
+        cb(err);
     }
 });
 
 app.get("/register", (req, res) => {
     res.render("index.ejs", { 
         activePage: "register",
-        user: req.session.user,
+        user: req.user,
         signUpPage: `
                         <div class="container mt-4">
                             <div class="row justify-content-center">
@@ -1162,7 +1211,7 @@ app.post("/register", async (req, res) => {
                     );
                     const novoUsuario = result.rows[0];
 
-                    req.session.user = {
+                    req.user = {
                         id: novoUsuario.id,
                         username: novoUsuario.username,
                         email: novoUsuario.email
@@ -1183,8 +1232,8 @@ app.get("/logout", (req, res) => {
 });
 
 app.get("/profile", async (req, res) => {
-    const userId = req.session.user.id;
-    const username = req.session.user.username;
+    const userId = req.user.id;
+    const username = req.user.username;
     const page = parseInt(req.query.page) || 1;
     const reviewsPerPage = 5;
     const offset = (page - 1) * reviewsPerPage;
@@ -1379,7 +1428,7 @@ app.get("/profile", async (req, res) => {
 
         res.render("index.ejs", {
             activePage: "profile",
-            user: req.session.user,
+            user: req.user,
             profilePage: profileContent
         });
     } catch (err) {
