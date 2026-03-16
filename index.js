@@ -7,6 +7,7 @@ import bcrypt from "bcrypt"
 import session from "express-session";
 import passport from "passport";
 import { Strategy } from "passport-local";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,7 +15,7 @@ app.use(express.static("public"));
 
 app.use(
   session({
-    secret: "TOPSECRETWORD",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -40,12 +41,6 @@ db.on('error', (err) => {
 db.connect()
     .then(() => console.log("Successfully connected to the cloud database."))
     .catch(err => console.error("Error connecting to the database:", err.stack));
-
-app.use(session({
-    secret: 'dinesp_key', 
-    resave: false,
-    saveUninitialized: false
-}));
 
 const apiKey = process.env.GEOAPIFY_API_KEY;
 
@@ -984,9 +979,16 @@ app.get("/login", (req, res) => {
                                                     <label for="passwordInput" style="color: #6a6053;">Password</label>
                                                 </div>
 
-                                                <button type="submit" class="btn w-100 fw-bold fs-5 rounded-pill mb-3" style="background-color: #433c33; color: #ffffff; padding: 10px 0;">
+                                                <button type="submit" class="btn w-100 fw-bold fs-5 rounded-pill mb-2" style="background-color: #433c33; color: #ffffff; padding: 10px 0;">
                                                     Login
                                                 </button>
+
+                                                <div class="text-center my-3 text-muted fw-bold">OR</div>
+
+                                                <a href="/auth/google" class="btn w-100 fw-bold fs-5 mb-3 d-flex align-items-center justify-content-center" style="background-color: #ffffff; color: #433c33; border: 2px solid #d8cbb8; border-radius: 10px; padding: 10px 0; transition: background-color 0.3s;">
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" width="24" height="24" class="me-2">
+                                                    Continue with Google
+                                                </a>
                                             </form>
 
                                             <p class="mt-3 mb-0" style="color: #433c33;">
@@ -1083,6 +1085,51 @@ passport.use(
     })
 );
 
+passport.use("google", 
+    new GoogleStrategy(
+        {
+            clientID: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            callbackURL: "http://localhost:3000/auth/google/callback",
+            userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo" 
+        }, 
+        async (accessToken, refreshToken, profile, cb) => {
+            try {
+                const email = profile.emails[0].value;
+                const username = profile.displayName; 
+
+                const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+                
+                if (result.rows.length === 0) {
+                    const newUser = await db.query(
+                        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *", 
+                        [username, email, "google"]
+                    );
+                    
+                    return cb(null, newUser.rows[0]);
+                } else {
+                    return cb(null, result.rows[0]);
+                }
+            } catch (err) {
+                return cb(err);
+            }
+        }
+    )
+);
+
+app.get("/auth/google", 
+    passport.authenticate("google", {
+        scope: ["profile", "email"]
+    })
+);
+
+app.get("/auth/google/callback", 
+    passport.authenticate("google", {
+        successRedirect: "/", 
+        failureRedirect: "/login?error=true"
+    })
+);
+
 passport.serializeUser((user, cb) => {
     cb(null, user.id);
 });
@@ -1143,9 +1190,16 @@ app.get("/register", (req, res) => {
                                                     <label for="passwordConfirmationRegister" style="color: #6a6053;">Confirm Password</label>
                                                 </div>
 
-                                                <button type="submit" class="btn w-100 fw-bold fs-5 rounded-pill mb-3" style="background-color: #433c33; color: #ffffff; padding: 10px 0;">
+                                                <button type="submit" class="btn w-100 fw-bold fs-5 rounded-pill mb-2" style="background-color: #433c33; color: #ffffff; padding: 10px 0;">
                                                     Sign Up
                                                 </button>
+
+                                                <div class="text-center my-3 text-muted fw-bold">OR</div>
+
+                                                <a href="/auth/google" class="btn w-100 fw-bold fs-5 mb-3 d-flex align-items-center justify-content-center" style="background-color: #ffffff; color: #433c33; border: 2px solid #d8cbb8; border-radius: 10px; padding: 10px 0; transition: background-color 0.3s;">
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" width="24" height="24" class="me-2">
+                                                    Continue with Google
+                                                </a>
                                             </form>
 
                                             <script>
