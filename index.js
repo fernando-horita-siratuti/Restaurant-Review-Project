@@ -28,14 +28,17 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const db = new pg.Pool({
-    connectionString: process.env.DATABASE_URL
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false 
+    }
 });
 
 db.on('error', (err) => {
-    console.error('Unexcpected conextion error with the database:', err.message);
+    console.error('Unexpected connection error with the database:', err.message);
 });
 
-db.connect()
+db.query('SELECT 1')
     .then(() => console.log("Successfully connected to the cloud database."))
     .catch(err => console.error("Error connecting to the database:", err.stack));
 
