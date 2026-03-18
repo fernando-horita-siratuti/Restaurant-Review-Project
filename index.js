@@ -887,7 +887,7 @@ app.get("/review", (req, res) => {
 
                                 <div class="col-12 custom-date text-start">
                                     <label for="dateInput" class="form-label review-label fw-bold">Date Visited</label>
-                                    <input type="date" class="form-control elegant-input" id="dateInput" name="dateVisited" style="padding-left: 10px; padding-right: 10px;" required> 
+                                    <input type="text" class="form-control elegant-input" id="dateInput" name="dateVisited" placeholder="dd/mm/yyyy" onfocus="(this.type='date')" onblur="if(!this.value) this.type='text'" style="padding-left: 10px; padding-right: 10px;" required> 
                                 </div>
                             </div>
 
