@@ -1314,7 +1314,6 @@ app.get("/profile", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const reviewsPerPage = 5;
     const offset = (page - 1) * reviewsPerPage;
-
     const sortOrder = req.query.sort || 'newest';
     let orderClause = "ORDER BY date DESC, id DESC"; 
     
@@ -1329,6 +1328,21 @@ app.get("/profile", async (req, res) => {
     }
 
     try {
+        const statsResult = await db.query(
+            `
+                SELECT 
+                (SELECT COUNT(*) FROM reviews WHERE user_id = $1) as total_reviews,
+                (SELECT neighborhood FROM reviews WHERE user_id = $1 GROUP BY neighborhood ORDER BY COUNT(*) DESC LIMIT 1) as top_neighborhood,
+                (SELECT cuisine FROM reviews WHERE user_id = $1 GROUP BY cuisine ORDER BY COUNT(*) DESC LIMIT 1) as top_cuisine
+            `, 
+            [userId]
+        ); 
+
+        const stats = statsResult.rows[0];
+        const totalReviewsStat = stats.total_reviews || 0;
+        const topNeighborhood = stats.top_neighborhood || '-';
+        const topCuisine = stats.top_cuisine || '-';
+
         const reviewsResult = await db.query(
             `
                 SELECT *, COUNT(*) OVER() as full_count 
@@ -1494,6 +1508,21 @@ app.get("/profile", async (req, res) => {
                                             <span class="badge rounded-pill fw-medium fs-6 mt-2" style="background-color: #382f2f; color: #f2ebd9; padding: 8px 16px;">
                                                 User ID: #${userId}
                                             </span>
+                                        </div>
+
+                                        <div class="d-flex justify-content-center flex-wrap gap-3 mt-4 mb-5">
+                                            <div class="p-3 rounded shadow-sm text-center" style="background-color: #f2ebd9; border-left: 5px solid #bbae87; min-width: 150px;">
+                                                <h3 class="fw-bold mb-0" style="color: #382f2f;">${totalReviewsStat}</h3>
+                                                <span class="fw-bold" style="font-size: 0.75rem; letter-spacing: 1px; color: #55514b;">TOTAL REVIEWS</span>
+                                            </div>
+                                            <div class="p-3 rounded shadow-sm text-center" style="background-color: #f2ebd9; border-left: 5px solid #bbae87; min-width: 150px;">
+                                                <h4 class="fw-bold mb-0 text-truncate mx-auto" style="color: #382f2f; max-width: 160px; font-family: Georgia, 'Times New Roman', serif;">${topNeighborhood}</h4>
+                                                <span class="fw-bold" style="font-size: 0.75rem; letter-spacing: 1px; color: #55514b;">TOP NEIGHBORHOOD</span>
+                                            </div>
+                                            <div class="p-3 rounded shadow-sm text-center" style="background-color: #f2ebd9; border-left: 5px solid #bbae87; min-width: 150px;">
+                                                <h4 class="fw-bold mb-0 text-truncate mx-auto" style="color: #382f2f; max-width: 160px; font-family: Georgia, 'Times New Roman', serif;">${topCuisine}</h4>
+                                                <span class="fw-bold" style="font-size: 0.75rem; letter-spacing: 1px; color: #55514b;">TOP CUISINE</span>
+                                            </div>
                                         </div>
                                         
                                         <div class="d-flex justify-content-between align-items-center mx-auto mb-4 pb-2" style="max-width: 800px; border-bottom: 2px solid #d4c598;">
@@ -1752,6 +1781,21 @@ app.get("/user/:id", async (req, res) => {
         }
 
         const profileOwnerName = userResult.rows[0].username;
+        const statsResult = await db.query(
+            `
+                SELECT 
+                (SELECT COUNT(*) FROM reviews WHERE user_id = $1) as total_reviews,
+                (SELECT neighborhood FROM reviews WHERE user_id = $1 GROUP BY neighborhood ORDER BY COUNT(*) DESC LIMIT 1) as top_neighborhood,
+                (SELECT cuisine FROM reviews WHERE user_id = $1 GROUP BY cuisine ORDER BY COUNT(*) DESC LIMIT 1) as top_cuisine
+            `, 
+            [profileId]
+        ); 
+
+        const stats = statsResult.rows[0];
+        const totalReviewsStat = stats.total_reviews || 0;
+        const topNeighborhood = stats.top_neighborhood || '-';
+        const topCuisine = stats.top_cuisine || '-';
+        
         const reviewsResult = await db.query(
             `
                 SELECT *, COUNT(*) OVER() as full_count 
@@ -1895,7 +1939,7 @@ app.get("/user/:id", async (req, res) => {
 
         const publicProfileHtml =   `
                                         <div class="container mt-5 text-center mb-5">
-                                            <div class="mb-5">
+                                            <div class="mb-4">
                                                 <i class="bi bi-person-circle" style="font-size: 4.5rem; color: #bbae87;"></i>
                                                 <div class="d-flex justify-content-center mt-3 mb-3">
                                                     <span class="rounded-pill shadow-sm fw-bold px-4 py-2" style="background-color: #382f2f; color: #f2ebd9; font-size: 1.1rem; letter-spacing: 0.5px;">
@@ -1903,6 +1947,21 @@ app.get("/user/:id", async (req, res) => {
                                                     </span>
                                                 </div>
                                                 <h2 class="fw-bold mb-0" style="color: #382f2f;">${profileOwnerName}'s Reviews</h2>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-center flex-wrap gap-3 mt-4 mb-5">
+                                                <div class="p-3 rounded shadow-sm text-center" style="background-color: #f2ebd9; border-left: 5px solid #bbae87; min-width: 150px;">
+                                                    <h3 class="fw-bold mb-0" style="color: #382f2f;">${totalReviewsStat}</h3>
+                                                    <span class="fw-bold" style="font-size: 0.75rem; letter-spacing: 1px; color: #55514b;">TOTAL REVIEWS</span>
+                                                </div>
+                                                <div class="p-3 rounded shadow-sm text-center" style="background-color: #f2ebd9; border-left: 5px solid #bbae87; min-width: 150px;">
+                                                    <h4 class="fw-bold mb-0 text-truncate mx-auto" style="color: #382f2f; max-width: 160px; font-family: Georgia, 'Times New Roman', serif;">${topNeighborhood}</h4>
+                                                    <span class="fw-bold" style="font-size: 0.75rem; letter-spacing: 1px; color: #55514b;">TOP NEIGHBORHOOD</span>
+                                                </div>
+                                                <div class="p-3 rounded shadow-sm text-center" style="background-color: #f2ebd9; border-left: 5px solid #bbae87; min-width: 150px;">
+                                                    <h4 class="fw-bold mb-0 text-truncate mx-auto" style="color: #382f2f; max-width: 160px; font-family: Georgia, 'Times New Roman', serif;">${topCuisine}</h4>
+                                                    <span class="fw-bold" style="font-size: 0.75rem; letter-spacing: 1px; color: #55514b;">TOP CUISINE</span>
+                                                </div>
                                             </div>
                                             
                                             <div class="d-flex justify-content-between align-items-center mx-auto mb-4 pb-2" style="max-width: 800px; border-bottom: 2px solid #d4c598;">
@@ -1945,7 +2004,6 @@ async function getNeighborhoodId(neighborhood, cidade = "São Paulo") {
         return;
     }
 }
-
 
 async function getEstablishment(neighborhoodId, category) {
     try {
