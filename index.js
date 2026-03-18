@@ -289,7 +289,11 @@ app.get("/view", async (req, res) => {
                                                             <i class="bi bi-person-fill fs-3"></i>
                                                         </div>
                                                         <div class="text-start text-truncate">
-                                                            <h4 class="card-title fw-bold mb-0 text-truncate" style="color: #382f2f;">${username} #${userId}</h4>
+                                                            <h4 class="card-title mb-0 text-truncate">
+                                                                <a href="/user/${userId}" class="text-decoration-none fw-bold" style="color: #382f2f; transition: color 0.2s;" onmouseover="this.style.color='#bbae87'" onmouseout="this.style.color='#382f2f'">
+                                                                    ${username}
+                                                                </a>
+                                                            </h4>
                                                         </div>
                                                     </div>
                                                     <div class="rounded shadow-sm d-flex flex-column justify-content-center align-items-center flex-shrink-0" style="background-color: #382f2f; color: #f2ebd9; padding: 8px 12px; margin-top: -5px;">
@@ -1736,6 +1740,81 @@ async function getNeighborhoodId(neighborhood, cidade = "São Paulo") {
         return;
     }
 }
+
+app.get("/user/:id", async (req, res) => {
+    const profileId = req.params.id;
+
+    try {
+        const userResult = await db.query("SELECT username FROM users WHERE id = $1", [profileId]);
+        
+        if (userResult.rows.length === 0) {
+            return res.status(404).send("User not found.");
+        }
+        
+        const profileOwnerName = userResult.rows[0].username;
+        const reviewsResult = await db.query("SELECT * FROM reviews WHERE user_id = $1 ORDER BY date DESC", [profileId]);
+        const reviews = reviewsResult.rows;
+        let publicProfileHtml = `
+                                    <div class="container mt-5 mb-5 text-center">
+                                        <div class="mb-4">
+                                            <i class="bi bi-person-circle" style="font-size: 4.5rem; color: #bbae87;"></i>
+                                            <div class="d-flex justify-content-center mt-3 mb-3">
+                                                <span class="rounded-pill shadow-sm fw-bold px-4 py-2" style="background-color: #382f2f; color: #f2ebd9; font-size: 1.1rem; letter-spacing: 0.5px;">
+                                                    User ID: #${profileId}
+                                                </span>
+                                            </div>
+                                            <h2 class="fw-bold mb-0" style="color: #382f2f;">${profileOwnerName}'s Reviews</h2>
+                                        </div>
+                                `;
+
+        
+        reviews.forEach(review => {
+            const dateObj = new Date(review.date);
+            const formatedDate = ("0" + dateObj.getDate()).slice(-2) + "/" + ("0" + (dateObj.getMonth() + 1)).slice(-2) + "/" + dateObj.getFullYear();              
+            let cardRate = `${review.rating}/10`;
+
+            if (review.rating >= 8) {
+                cardRate += ' ⭐';
+            }
+            
+            publicProfileHtml +=    `
+                                        <div class="card shadow-sm border-0 mb-4 mx-auto" style="border-radius: 16px; background-color: #ffffff; max-width: 800px; width: 100%;">
+                                            <div class="card-body p-3 p-md-4">
+                                                <div class="d-flex justify-content-between align-items-start mb-3 gap-2 gap-md-3">
+                                                    <div class="text-start flex-grow-1">
+                                                        <h5 class="fw-bold fs-4 mb-2" style="color: #382f2f;">🍽️ ${review.restaurant_name}</h5>
+                                                        
+                                                        <p class="text-muted mb-0 fw-bold" style="font-size: 1.1rem;">
+                                                            <span class="d-block d-md-inline">📍 ${review.neighborhood} &nbsp; | &nbsp; 👨‍🍳 ${review.cuisine}</span>
+                                                            <span class="d-none d-md-inline"> &nbsp; | &nbsp; </span>
+                                                            <span class="d-block d-md-inline mt-1 mt-md-0">💵 ${review.price} &nbsp; | &nbsp; 📅 ${formatedDate}</span>
+                                                        </p>
+                                                    </div>
+                                                    <div class="rounded shadow-sm d-flex flex-column justify-content-center align-items-center flex-shrink-0" style="background-color: #382f2f; color: #f2ebd9; padding: 8px 12px; margin-top: -5px;">
+                                                        <span class="fw-bold fs-4 fs-md-3" style="line-height: 1;">${cardRate}</span>
+                                                        <span class="fw-bold" style="font-size: 0.6rem; letter-spacing: 1px; margin-top: 4px;">RATING</span>
+                                                    </div>
+                                                </div>
+                                                <div class="p-3 rounded text-start" style="background-color: #f2ebd9; border-left: 5px solid #bbae87;">
+                                                    <p class="card-text mb-0" style="white-space: pre-wrap; color: #55514b; font-size: 1.05rem; font-style: italic;">"${review.review_text}"</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+        });
+        publicProfileHtml += `</div>`; 
+
+        res.render("index.ejs", {
+            activePage: "publicProfile",
+            user: req.user, 
+            profilePage: publicProfileHtml 
+        });
+
+    } catch (err) {
+        console.error("Error loading public profile:", err);
+        res.status(500).send("Error loading profile.");
+    }
+});
 
 async function getEstablishment(neighborhoodId, category) {
     try {
