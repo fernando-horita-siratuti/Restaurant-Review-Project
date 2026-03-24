@@ -168,6 +168,7 @@ I would like to thank [Angela Yu](https://github.com/angelabauer) for providing 
 [linkedin-badge]: https://img.shields.io/badge/-LinkedIn-blue?style=flat-square&logo=Linkedin&logoColor=white
 [github-badge]: https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white
 [instagram-badge]: https://img.shields.io/badge/-Instagram-E4405F?style=flat-square&logo=instagram&logoColor=white
+[![Hypercommit](https://img.shields.io/badge/Hypercommit-DB2475)](https://hypercommit.com/dinesp)
 
 [gmail-autor]: mailto:siratutifernando@gmail.com
 [linkedin-autor]: https://www.linkedin.com/in/fernando-siratuti-503ba8301/
